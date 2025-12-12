@@ -36,7 +36,7 @@ spec:
         kargo.akuity.io/authorized-stage: kargo-demo:{{ "{{" }}.environment{{ "}}" }}
     spec:
       destination:
-        name: '{{ "{{" }}.cluster{{ "}}" }}'
+        server: https://kubernetes.default.svc
         namespace: argo-cd
       project: 'default'
       source:
