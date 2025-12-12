@@ -1,4 +1,4 @@
-{{ if eq .Values.global.argoApp.environment "stage" }}
+{{ if eq .Values.global.argoApp.environment "kargo-test" }}
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -13,13 +13,13 @@ spec:
         generators:
         - list:
             elements:
-              - cluster: kind-stage
+              - cluster: kind-kargo-test
                 server: https://kubernetes.default.svc
-                environment: stage
+                environment: kargo-test
                 clusterType: control
                 nodesCidr: 172.18.0.0/16
-                apiserver: https://172.18.0.5:6443
-                apiserverIp: 172.18.0.5
+                apiserver: https://172.18.0.4:6443
+                apiserverIp: 172.18.0.4
         - list:
             elements:
               - appName: argo-cd

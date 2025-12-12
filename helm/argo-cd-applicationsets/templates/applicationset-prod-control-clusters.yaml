@@ -23,11 +23,11 @@ spec:
         - list:
             elements:
               - appName: argo-cd
-                appRevision: argo-cd-2.2.0
+                appRevision: main
               - appName: argo-cd-applicationsets
                 appRevision: main
               - appName: cert-manager
-                appRevision: cert-manager-1.7.0
+                appRevision: main
 
   goTemplate: true
   goTemplateOptions:
@@ -41,7 +41,7 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: argo-cd
-      project: 'msvc-system'
+      project: 'default'
       source:
         path: apps/{{ "{{" }}.appName{{ "}}" }}
         repoURL: https://github.com/trawler/kargo-demo.git
@@ -51,7 +51,7 @@ spec:
             - name: argoApp.name
               value: '{{ "{{" }}.appName{{ "}}" }}-{{ "{{" }}.cluster{{ "}}" }}'
             - name: argoApp.project
-              value: 'msvc-system'
+              value: 'default'
             - name: argoApp.cluster
               value: '{{ "{{" }}.cluster{{ "}}" }}'
             - name: argoApp.server
