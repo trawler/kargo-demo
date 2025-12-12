@@ -1,14 +1,11 @@
 # Kargo Helm Chart values
 # These are installed via the child-kargo Application on each control cluster
 
-repoURL: "https://akuity.github.io/kargo"
-chart: "kargo"
-targetRevision: "v1.1.0"
-
-# Kargo release values
-kargo:
-  namespace: kargo
-  enabled: true
+# Kargo operator configuration (aliased as kargo-operator in Chart.yaml)
+kargo-operator:
+  serviceAccount:
+    create: false
+    name: kargo-controller
   
 # Project settings
 project:

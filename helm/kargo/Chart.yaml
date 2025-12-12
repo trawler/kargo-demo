@@ -4,3 +4,8 @@ description: Kargo Helm chart for deployment
 type: application
 version: 1.0.0
 appVersion: "v1.1.0"
+dependencies:
+  - name: kargo
+    version: "v1.1.0"
+    repository: "https://akuity.github.io/kargo"
+    alias: kargo-operator
