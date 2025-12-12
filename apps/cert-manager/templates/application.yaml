@@ -1,0 +1,20 @@
+{{- if .Values.argoApp }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.argoApp.name }}
+  namespace: argocd
+spec:
+  project: {{ .Values.argoApp.project }}
+  source:
+    repoURL: https://github.com/trawler/kargo-demo.git
+    path: helm/cert-manager
+    targetRevision: {{ .Values.argoApp.revision }}
+  destination:
+    server: {{ .Values.argoApp.server }}
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+{{- end }}

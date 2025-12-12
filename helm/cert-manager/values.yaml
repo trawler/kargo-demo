@@ -1,0 +1,4 @@
+cert-manager:
+  enabled: true
+  namespace: cert-manager
+  installCRDs: true
