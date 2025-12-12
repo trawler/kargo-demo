@@ -1,0 +1,19 @@
+# Kargo Helm Chart values
+# These are installed via the child-kargo Application on each control cluster
+
+repoURL: "https://akuity.github.io/kargo"
+chart: "kargo"
+targetRevision: "v1.1.0"
+
+# Kargo release values
+kargo:
+  namespace: kargo
+  enabled: true
+  
+# Project settings
+project:
+  name: kargo-demo
+  autoCreateNamespace: true
+
+git:
+  repoURL: "https://github.com/trawler/kargo-demo.git"

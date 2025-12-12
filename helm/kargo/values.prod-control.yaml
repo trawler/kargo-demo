@@ -1,0 +1,11 @@
+# Prod-control specific values
+kargo:
+  namespace: kargo
+  enabled: true
+
+projectConfig:
+  autoPromotionEnabled: false
+
+warehouse:
+  enabled: true
+  allowTags: "^[a-z0-9-]+-[0-9]+\\.[0-9]+\\.[0-9]+$"

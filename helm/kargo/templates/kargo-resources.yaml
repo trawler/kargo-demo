@@ -1,0 +1,25 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: {{ .Values.projectConfig.name }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.projectConfig.name }}
+  labels:
+    kargo.akuity.io/project: "true"
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: {{ .Values.projectConfig.name }}
+  namespace: {{ .Values.projectConfig.name }}
+spec:
+  promotionPolicies:
+    - stageSelector:
+        name: stage
+      autoPromotionEnabled: {{ .Values.projectConfig.autoPromotionEnabled }}
+    - stageSelector:
+        name: prod
+      autoPromotionEnabled: false

@@ -26,6 +26,8 @@ spec:
                 appRevision: main
               - appName: cert-manager
                 appRevision: main
+              - appName: kargo
+                appRevision: main
   goTemplate: true
   goTemplateOptions:
   - missingkey=error

@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: child-{{ .Values.argoApp.name }}
+  namespace: {{ .Values.argoApp.namespace }}
+  labels:
+    argocd.argoproj.io/appname: {{ .Values.argoApp.path }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: {{ .Values.argoApp.path }}
+    name: {{ .Values.argoApp.cluster }}
+  project: {{ .Values.argoApp.project }}
+  sources:
+    - path: helm/{{ .Values.argoApp.path }}
+      repoURL: https://github.com/trawler/kargo-demo.git
+      targetRevision: {{ .Values.argoApp.revision }}
+      helm:
+        releaseName: {{ .Values.argoApp.path }}
+        ignoreMissingValueFiles: true
+        valueFiles:
+          - /values/{{ .Values.argoApp.path }}/values.yaml
+          - /values/{{ .Values.argoApp.path }}/values.{{ .Values.argoApp.environment }}.yaml
+          - /values/{{ .Values.argoApp.path }}/values.{{ .Values.argoApp.cluster }}.yaml
+        values: |
+          global:
+            {{ .Values | toYaml | nindent 12}}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=false
+      - CreateNamespace=false
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ServerSideApply=true
