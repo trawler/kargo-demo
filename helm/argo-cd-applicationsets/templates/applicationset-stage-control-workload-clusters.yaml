@@ -1,8 +1,8 @@
-{{ if eq .Values.global.argoApp.environment "prod" }}
+{{ if eq .Values.global.argoApp.environment "stage" }}
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: prod-control-clusters
+  name: stage-control-workload-clusters
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/part-of: argocd
@@ -13,20 +13,16 @@ spec:
         generators:
         - list:
             elements:
-              - cluster: prod-workload
-                server: https://prod-workload:6443
-                environment: prod
+              - cluster: stage-workload
+                server: https://stage-workload:6443
+                environment: stage
                 clusterType: workload
                 nodesCidr: 172.18.0.0/16
-                apiserver: https://172.18.0.5:6443
-                apiserverIp: 172.18.0.5
+                apiserver: https://172.18.0.4:6443
+                apiserverIp: 172.18.0.4
         - list:
             elements:
-              - appName: argo-cd-applicationsets
-                appRevision: main
               - appName: cert-manager
-                appRevision: cert-manager-1.17.1
-              - appName: kargo
                 appRevision: main
   goTemplate: true
   goTemplateOptions:

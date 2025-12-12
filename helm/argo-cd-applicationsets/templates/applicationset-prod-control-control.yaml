@@ -1,0 +1,67 @@
+{{ if eq .Values.global.argoApp.environment "prod" }}
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: prod-control-control-clusters
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/instance: argocd-cd
+spec:
+  generators:
+    - list:
+        elements:
+          - appName: argo-cd-applicationsets
+            appRevision: main
+          - appName: kargo
+            appRevision: main
+  goTemplate: true
+  goTemplateOptions:
+  - missingkey=error
+  template:
+    metadata:
+      name: '{{ "{{" }}.appName{{ "}}" }}-prod-control'
+      annotations:
+        kargo.akuity.io/authorized-stage: kargo-demo:prod
+    spec:
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      project: 'default'
+      source:
+        path: apps/{{ "{{" }}.appName{{ "}}" }}
+        repoURL: https://github.com/trawler/kargo-demo.git
+        targetRevision: '{{ "{{" }}.appRevision{{ "}}" }}'
+        helm:
+          parameters:
+            - name: argoApp.name
+              value: '{{ "{{" }}.appName{{ "}}" }}-prod-control'
+            - name: argoApp.project
+              value: 'default'
+            - name: argoApp.cluster
+              value: 'prod-control'
+            - name: argoApp.server
+              value: 'https://kubernetes.default.svc'
+            - name: argoApp.path
+              value: '{{ "{{" }}.appName{{ "}}" }}'
+            - name: argoApp.revision
+              value: '{{ "{{" }}.appRevision{{ "}}" }}'
+            - name: argoApp.namespace
+              value: 'argocd'
+            - name: argoApp.environment
+              value: 'prod'
+            - name: argoApp.nodes.cidr
+              value: '172.18.0.0/16'
+            - name: argoApp.clusterType
+              value: 'control'
+            - name: argoApp.apiserver.cidr
+              value: '172.18.0.3'
+            - name: argoApp.apiserver.server
+              value: 'https://172.18.0.3:6443'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Replace=true
+{{ end }}
