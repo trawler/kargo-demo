@@ -12,6 +12,8 @@ kargo:
     enabled: true
     service:
       type: LoadBalancer
+    adminAccount:
+      passwordHash: "$2y$10$BnVJLSysDD/PIwdXaRRI.OPtjwh2U0TTdmT/Ju4euv0ql8BSchG76"
   
   # Webhook settings
   webhooks:
