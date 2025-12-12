@@ -9,7 +9,7 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
-    namespace: argo-cd
+    namespace: argocd
     name: {{ .Values.argoApp.cluster }}
   project: {{ .Values.argoApp.project }}
   sources:

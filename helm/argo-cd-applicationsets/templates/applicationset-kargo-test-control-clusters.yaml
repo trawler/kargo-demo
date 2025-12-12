@@ -44,7 +44,7 @@ spec:
     spec:
       destination:
         server: '{{ "{{" }}.server{{ "}}" }}'
-        namespace: argo-cd
+        namespace: argocd
       project: 'default'
       source:
         path: apps/{{ "{{" }}.appName{{ "}}" }}
@@ -65,7 +65,7 @@ spec:
             - name: argoApp.revision
               value: '{{ "{{" }}.appRevision{{ "}}" }}'
             - name: argoApp.namespace
-              value: 'argo-cd'
+              value: 'argocd'
             - name: argoApp.environment
               value: '{{ "{{" }}.environment{{ "}}" }}'
             - name: argoApp.nodes.cidr
