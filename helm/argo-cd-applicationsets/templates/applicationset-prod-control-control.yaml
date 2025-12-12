@@ -11,6 +11,8 @@ spec:
   generators:
     - list:
         elements:
+          - appName: cert-manager
+            appRevision: cert-manager-1.17.1
           - appName: argo-cd-applicationsets
             appRevision: main
           - appName: kargo

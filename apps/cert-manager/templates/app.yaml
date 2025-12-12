@@ -10,7 +10,7 @@ metadata:
 spec:
   destination:
     namespace: {{ .Values.argoApp.path }}
-    {{- if or (eq .Values.argoApp.path "argo-cd-applicationsets") (eq .Values.argoApp.path "kargo") }}
+    {{- if or (eq .Values.argoApp.path "argo-cd-applicationsets") (eq .Values.argoApp.path "kargo") (and (eq .Values.argoApp.path "cert-manager") (eq .Values.argoApp.clusterType "control")) }}
     server: https://kubernetes.default.svc
     {{- else }}
     name: {{ .Values.argoApp.cluster }}

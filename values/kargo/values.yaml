@@ -1,35 +1,37 @@
 # Base Kargo values for all environments
-controller:
-  enabled: true
-  logLevel: INFO
-
-api:
-  enabled: true
-  replicas: 1
-  host: localhost
-  logLevel: INFO
-  logFormat: CONSOLE
-  secretManagementEnabled: true
-  permissiveCORSPolicyEnabled: false
-  service:
-    type: LoadBalancer
-  adminAccount:
+# All values nested under 'kargo' key since it's a subchart dependency
+kargo:
+  controller:
     enabled: true
-    passwordHash: "$2y$10$BnVJLSysDD/PIwdXaRRI.OPtjwh2U0TTdmT/Ju4euv0ql8BSchG76"
-    tokenSigningKey: "i8flMsztEUD656zGakWrt7Fw1grWT5VCecRkOKiBrNw="
-    tokenTTL: 24h
-  oidc:
-    enabled: false
+    logLevel: INFO
 
-webhooks:
-  enabled: true
-  logLevel: INFO
+  api:
+    enabled: true
+    replicas: 1
+    host: localhost
+    logLevel: INFO
+    logFormat: CONSOLE
+    secretManagementEnabled: true
+    permissiveCORSPolicyEnabled: false
+    service:
+      type: LoadBalancer
+    adminAccount:
+      enabled: true
+      passwordHash: "$2y$10$BnVJLSysDD/PIwdXaRRI.OPtjwh2U0TTdmT/Ju4euv0ql8BSchG76"
+      tokenSigningKey: "i8flMsztEUD656zGakWrt7Fw1grWT5VCecRkOKiBrNw="
+      tokenTTL: 24h
+    oidc:
+      enabled: false
 
-serviceAccount:
-  create: true
-  name: kargo-controller
+  webhooks:
+    enabled: true
+    logLevel: INFO
 
-namespace: kargo
+  serviceAccount:
+    create: true
+    name: kargo-controller
 
-global:
-  clusterSecretsNamespace: kargo-cluster-secrets
+  namespace: kargo
+
+  global:
+    clusterSecretsNamespace: kargo-cluster-secrets
