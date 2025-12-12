@@ -1,0 +1,10 @@
+# Stage-control cluster overrides (combines stage environment + control cluster)
+api:
+  host: "kargo-stage.localhost"
+
+projectConfig:
+  autoPromotionEnabled: true
+
+warehouse:
+  enabled: true
+  branch: main
