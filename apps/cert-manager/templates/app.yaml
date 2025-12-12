@@ -11,7 +11,7 @@ spec:
   destination:
     namespace: {{ .Values.argoApp.path }}
     {{- if or (eq .Values.argoApp.path "argo-cd-applicationsets") (eq .Values.argoApp.path "kargo") }}
-    name: in-cluster
+    server: https://kubernetes.default.svc
     {{- else }}
     name: {{ .Values.argoApp.cluster }}
     {{- end }}
