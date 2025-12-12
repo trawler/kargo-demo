@@ -6,6 +6,5 @@ version: 1.0.0
 appVersion: "v1.1.0"
 dependencies:
   - name: kargo
-    version: "v1.1.0"
-    repository: "https://akuity.github.io/kargo"
-    alias: kargo-operator
+    version: "1.8.4"
+    repository: "oci://ghcr.io/akuity/kargo-charts"
