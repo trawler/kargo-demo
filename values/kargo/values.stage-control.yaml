@@ -1,6 +1,9 @@
 # Stage-control cluster overrides (combines stage environment + control cluster)
 api:
   host: "kargo-stage.localhost"
+  adminAccount:
+    passwordHash: "$2y$10$BnVJLSysDD/PIwdXaRRI.OPtjwh2U0TTdmT/Ju4euv0ql8BSchG76"
+    tokenSigningKey: "i8flMsztEUD656zGakWrt7Fw1grWT5VCecRkOKiBrNw="
 
 projectConfig:
   autoPromotionEnabled: true

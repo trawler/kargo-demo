@@ -1,0 +1,38 @@
+# Kargo Helm Chart values
+# All values should be nested under 'kargo' key since kargo is a subchart dependency
+kargo:
+  controller:
+    enabled: true
+    logLevel: INFO
+
+  api:
+    enabled: true
+    replicas: 1
+    host: localhost
+    logLevel: INFO
+    logFormat: CONSOLE
+    secretManagementEnabled: true
+    permissiveCORSPolicyEnabled: false
+    service:
+      type: LoadBalancer
+    adminAccount:
+      enabled: true
+      # Default credentials for dev/test - override in cluster-specific values for production
+      passwordHash: "$2y$10$BnVJLSysDD/PIwdXaRRI.OPtjwh2U0TTdmT/Ju4euv0ql8BSchG76"
+      tokenSigningKey: "i8flMsztEUD656zGakWrt7Fw1grWT5VCecRkOKiBrNw="
+      tokenTTL: 24h
+    oidc:
+      enabled: false
+
+  webhooks:
+    enabled: true
+    logLevel: INFO
+
+  serviceAccount:
+    create: true
+    name: kargo-controller
+
+  namespace: kargo
+
+  global:
+    clusterSecretsNamespace: kargo-cluster-secrets

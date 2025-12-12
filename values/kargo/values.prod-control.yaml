@@ -1,6 +1,9 @@
 # Prod-control cluster overrides (combines prod environment + control cluster)
 api:
   host: "kargo-prod.localhost"
+  adminAccount:
+    passwordHash: "$2y$10$BnVJLSysDD/PIwdXaRRI.OPtjwh2U0TTdmT/Ju4euv0ql8BSchG76"
+    tokenSigningKey: "i8flMsztEUD656zGakWrt7Fw1grWT5VCecRkOKiBrNw="
 
 projectConfig:
   autoPromotionEnabled: false
