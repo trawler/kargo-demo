@@ -10,7 +10,11 @@ metadata:
 spec:
   destination:
     namespace: argocd
+    {{- if eq .Values.argoApp.path "argo-cd-applicationsets" }}
+    server: https://kubernetes.default.svc
+    {{- else }}
     name: {{ .Values.argoApp.cluster }}
+    {{- end }}
   project: {{ .Values.argoApp.project }}
   sources:
     - path: helm/{{ .Values.argoApp.path }}
