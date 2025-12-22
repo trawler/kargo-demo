@@ -36,3 +36,28 @@ kargo:
 
   global:
     clusterSecretsNamespace: kargo-cluster-secrets
+
+  # Kargo Project configuration
+  project:
+    enabled: true
+    name: msvc-system
+
+  # Warehouse configuration
+  warehouse:
+    enabled: true
+    name: msvc-system-warehouse
+    repoURL: https://github.com/trawler/kargo-demo.git
+    interval: 1m
+    # branch and allowTags are set per-environment in values.stage-control.yaml and values.prod-control.yaml
+
+  # Stages configuration
+  stages:
+    enabled: true
+    stage:
+      apps:
+        - name: child-cert-manager-stage-workload
+          namespace: argocd
+    prod:
+      apps:
+        - name: child-cert-manager-prod-workload
+          namespace: argocd

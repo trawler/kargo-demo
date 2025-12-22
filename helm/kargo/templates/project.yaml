@@ -1,0 +1,9 @@
+{{- if .Values.kargo.project.enabled }}
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: {{ .Values.kargo.project.name }}
+  namespace: {{ .Values.kargo.namespace }}
+spec: {}
+{{- end }}
+

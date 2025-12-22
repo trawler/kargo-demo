@@ -40,12 +40,12 @@ spec:
     metadata:
       name: '{{ "{{" }}.appName{{ "}}" }}-{{ "{{" }}.cluster{{ "}}" }}'
       annotations:
-        kargo.akuity.io/authorized-stage: kargo-demo:{{ "{{" }}.environment{{ "}}" }}
+        kargo.akuity.io/authorized-stage: msvc-system:{{ "{{" }}.environment{{ "}}" }}
     spec:
       destination:
         server: '{{ "{{" }}.server{{ "}}" }}'
         namespace: argocd
-      project: 'default'
+      project: 'msvc-system'
       source:
         path: apps/{{ "{{" }}.appName{{ "}}" }}
         repoURL: https://github.com/trawler/kargo-demo.git
@@ -55,7 +55,7 @@ spec:
             - name: argoApp.name
               value: '{{ "{{" }}.appName{{ "}}" }}-{{ "{{" }}.cluster{{ "}}" }}'
             - name: argoApp.project
-              value: 'default'
+              value: 'msvc-system'
             - name: argoApp.cluster
               value: '{{ "{{" }}.cluster{{ "}}" }}'
             - name: argoApp.server

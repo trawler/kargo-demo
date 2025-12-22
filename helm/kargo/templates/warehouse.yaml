@@ -1,0 +1,19 @@
+{{- if and .Values.kargo.warehouse.enabled .Values.kargo.project.enabled }}
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: {{ .Values.kargo.warehouse.name }}
+  namespace: {{ .Values.kargo.namespace }}
+spec:
+  subscriptions:
+    - git:
+        repoURL: {{ .Values.kargo.warehouse.repoURL }}
+        {{- if .Values.kargo.warehouse.branch }}
+        branch: {{ .Values.kargo.warehouse.branch }}
+        {{- end }}
+        {{- if .Values.kargo.warehouse.allowTags }}
+        allowTags: {{ .Values.kargo.warehouse.allowTags | quote }}
+        {{- end }}
+  interval: {{ .Values.kargo.warehouse.interval }}
+{{- end }}
+

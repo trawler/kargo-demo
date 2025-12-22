@@ -1,3 +1,0 @@
-# Namespace is created by the kargo operator Helm chart dependency
-# RBAC is handled by the kargo operator Helm chart dependency
-# This file can be removed as the operator dependency handles all setup

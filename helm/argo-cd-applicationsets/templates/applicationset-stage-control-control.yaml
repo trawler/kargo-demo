@@ -24,12 +24,12 @@ spec:
     metadata:
       name: '{{ "{{" }}.appName{{ "}}" }}-stage-control'
       annotations:
-        kargo.akuity.io/authorized-stage: kargo-demo:stage
+        kargo.akuity.io/authorized-stage: msvc-system:stage
     spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: argocd
-      project: 'default'
+      project: 'msvc-system'
       source:
         path: apps/{{ "{{" }}.appName{{ "}}" }}
         repoURL: https://github.com/trawler/kargo-demo.git
@@ -39,7 +39,7 @@ spec:
             - name: argoApp.name
               value: '{{ "{{" }}.appName{{ "}}" }}-stage-control'
             - name: argoApp.project
-              value: 'default'
+              value: 'msvc-system'
             - name: argoApp.cluster
               value: 'stage-control'
             - name: argoApp.server
