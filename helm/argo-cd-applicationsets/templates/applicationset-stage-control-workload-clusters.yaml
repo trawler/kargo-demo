@@ -18,8 +18,8 @@ spec:
                 environment: stage
                 clusterType: workload
                 nodesCidr: 172.18.0.0/16
-                apiserver: https://172.18.0.4:6443
-                apiserverIp: 172.18.0.4
+                apiserver: https://172.18.0.9:6443
+                apiserverIp: 172.18.0.9
         - list:
             elements:
               - appName: cert-manager
