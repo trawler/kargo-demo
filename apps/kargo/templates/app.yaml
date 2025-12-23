@@ -42,3 +42,19 @@ spec:
       - PrunePropagationPolicy=foreground
       - PruneLast=true
       - ServerSideApply=true
+  ignoreDifferences:
+    - group: kargo.akuity.io
+      kind: Warehouse
+      jsonPointers:
+        - /status
+        - /metadata/managedFields
+    - group: kargo.akuity.io
+      kind: Stage
+      jsonPointers:
+        - /status
+        - /metadata/managedFields
+    - group: kargo.akuity.io
+      kind: Freight
+      jsonPointers:
+        - /status
+        - /metadata/managedFields
