@@ -1,4 +1,5 @@
 {{- if and .Values.kargo.stages.enabled .Values.kargo.project.enabled }}
+{{- if eq .Values.global.argoApp.environment "stage" }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -22,7 +23,8 @@ spec:
               - name: {{ .name }}
                 namespace: {{ .namespace }}
               {{- end }}
-
+{{- end }}
+{{- if eq .Values.global.argoApp.environment "prod" }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -35,8 +37,7 @@ spec:
         kind: Warehouse
         name: {{ .Values.kargo.warehouse.name }}
       sources:
-        stages:
-          - stage
+        direct: true
   promotionTemplate:
     spec:
       steps:
@@ -47,6 +48,7 @@ spec:
               - name: {{ .name }}
                 namespace: {{ .namespace }}
               {{- end }}
+{{- end }}
 {{- end }}
 
 
