@@ -38,7 +38,7 @@ spec:
       selfHeal: true
     syncOptions:
       - Validate=false
-      - CreateNamespace=false
+      - CreateNamespace=true
       - PrunePropagationPolicy=foreground
       - PruneLast=true
       - ServerSideApply=true
