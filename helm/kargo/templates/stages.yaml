@@ -4,34 +4,49 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
   name: stage
-  namespace: {{ .Values.kargo.namespace }}
+  namespace: {{ .Values.kargo.project.name }}
 spec:
-  subscriptions:
-    upstreamStages: []  # Stage gets freight directly from warehouse
-  promotionMechanisms:
-    argoCd:
-      apps:
-        {{- range .Values.kargo.stages.stage.apps }}
-        - name: {{ .name }}
-          namespace: {{ .namespace }}
-        {{- end }}
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: {{ .Values.kargo.warehouse.name }}
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: argocd/sync
+          config:
+            apps:
+              {{- range .Values.kargo.stages.stage.apps }}
+              - name: {{ .name }}
+                namespace: {{ .namespace }}
+              {{- end }}
 
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
   name: prod
-  namespace: {{ .Values.kargo.namespace }}
+  namespace: {{ .Values.kargo.project.name }}
 spec:
-  subscriptions:
-    upstreamStages:
-      - name: stage  # Subscribe to promotions from stage
-  promotionMechanisms:
-    argoCd:
-      apps:
-        {{- range .Values.kargo.stages.prod.apps }}
-        - name: {{ .name }}
-          namespace: {{ .namespace }}
-        {{- end }}
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: {{ .Values.kargo.warehouse.name }}
+      sources:
+        stages:
+          - stage
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: argocd/sync
+          config:
+            apps:
+              {{- range .Values.kargo.stages.prod.apps }}
+              - name: {{ .name }}
+                namespace: {{ .namespace }}
+              {{- end }}
 {{- end }}
+
 

@@ -3,7 +3,7 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
 metadata:
   name: {{ .Values.kargo.warehouse.name }}
-  namespace: {{ .Values.kargo.namespace }}
+  namespace: {{ .Values.kargo.project.name }}
 spec:
   subscriptions:
     - git:
@@ -12,7 +12,7 @@ spec:
         branch: {{ .Values.kargo.warehouse.branch }}
         {{- end }}
         {{- if .Values.kargo.warehouse.allowTags }}
-        allowTags: {{ .Values.kargo.warehouse.allowTags | quote }}
+        allowTags: {{ .Values.kargo.warehouse.allowTags }}
         {{- end }}
   interval: {{ .Values.kargo.warehouse.interval }}
 {{- end }}
