@@ -47,7 +47,7 @@ kargo:
     enabled: true
     name: msvc-system-warehouse
     repoURL: https://github.com/trawler/kargo-demo.git
-    interval: 1m
+    interval: 1m0s
     # branch and allowTags are set per-environment in values.stage-control.yaml and values.prod-control.yaml
 
   # Stages configuration

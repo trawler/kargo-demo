@@ -66,7 +66,6 @@ spec:
           selfHeal: true
         syncOptions:
           - Replace=true
-{{ "{{" }}- if eq .appName "kargo" {{ "}}" }}
       ignoreDifferences:
         - group: kargo.akuity.io
           kind: Warehouse
@@ -83,5 +82,5 @@ spec:
           jsonPointers:
             - /status
             - /metadata/managedFields
-{{ "{{" }}- end {{ "}}" }}
+
 {{ end }}
