@@ -17,9 +17,9 @@ spec:
                 server: https://prod-workload:6443
                 environment: prod
                 clusterType: workload
-                nodesCidr: 172.18.0.0/16
-                apiserver: https://172.18.0.5:6443
-                apiserverIp: 172.18.0.5
+                nodesCidr: 172.20.0.0/16
+                apiserver: https://172.20.0.16:6443
+                apiserverIp: 172.20.0.16
         - list:
             elements:
               - appName: cert-manager

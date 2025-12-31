@@ -53,13 +53,13 @@ spec:
             - name: argoApp.environment
               value: 'prod'
             - name: argoApp.nodes.cidr
-              value: '172.18.0.0/16'
+              value: '172.20.0.0/16'
             - name: argoApp.clusterType
               value: 'control'
             - name: argoApp.apiserver.cidr
-              value: '172.18.0.3'
+              value: '172.20.0.15'
             - name: argoApp.apiserver.server
-              value: 'https://172.18.0.3:6443'
+              value: 'https://172.20.0.15:6443'
       syncPolicy:
         automated:
           prune: true
