@@ -1,2 +1,6 @@
+global:
+  argoApp:
+    environment: stage
+
 postgresqlClusters:
   enabled: true
