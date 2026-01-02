@@ -14,3 +14,4 @@ rm -rf /tmp/kargo-demo-kubeconfigs
 
 echo "✓ All kind clusters destroyed!"
 
+
