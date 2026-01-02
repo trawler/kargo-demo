@@ -15,14 +15,18 @@ spec:
         direct: true
   promotionTemplate:
     spec:
+      vars:
+        - name: repoURL
+          value: {{ .Values.kargo.warehouse.repoURL }}
       steps:
-        - uses: argocd/sync
-          config:
-            apps:
-              {{- range .Values.kargo.stages.stage.apps }}
-              - name: {{ .name }}
-                namespace: {{ .namespace }}
-              {{- end }}
+        # TODO: Create PromotionTask for complex logic:
+        # - Parse commit message to detect updated apps (convention-based)
+        # - Extract version from Chart.yaml for each app
+        # - Create tags for each updated app
+        # For now, this is a placeholder that needs PromotionTask implementation
+        - task:
+            name: create-app-tags
+            kind: PromotionTask
 {{- end }}
 {{- if eq .Values.global.argoApp.environment "prod" }}
 ---
@@ -40,14 +44,18 @@ spec:
         direct: true
   promotionTemplate:
     spec:
+      vars:
+        - name: repoURL
+          value: {{ .Values.kargo.warehouse.repoURL }}
       steps:
-        - uses: argocd/sync
-          config:
-            apps:
-              {{- range .Values.kargo.stages.prod.apps }}
-              - name: {{ .name }}
-                namespace: {{ .namespace }}
-              {{- end }}
+        # TODO: Create PromotionTask for complex logic:
+        # - Parse tag name to extract app name
+        # - Update ApplicationSet files with new tag
+        # - Commit and push changes
+        # For now, this is a placeholder that needs PromotionTask implementation
+        - task:
+            name: update-applicationset
+            kind: PromotionTask
 {{- end }}
 {{- end }}
 
