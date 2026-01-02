@@ -1,0 +1,19 @@
+{{- if and .Values.kargo.projectConfig .Values.kargo.project.enabled }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: {{ .Values.kargo.project.name }}
+  namespace: {{ .Values.kargo.project.name }}
+spec:
+  promotionPolicies:
+    {{- if and .Values.kargo.stages.stage (eq .Values.global.argoApp.environment "stage") }}
+    - stage: stage
+      autoPromotionEnabled: {{ .Values.kargo.projectConfig.autoPromotionEnabled | default false }}
+    {{- end }}
+    {{- if and .Values.kargo.stages.prod (eq .Values.global.argoApp.environment "prod") }}
+    - stage: prod
+      autoPromotionEnabled: {{ .Values.kargo.projectConfig.autoPromotionEnabled | default false }}
+    {{- end }}
+{{- end }}
+
