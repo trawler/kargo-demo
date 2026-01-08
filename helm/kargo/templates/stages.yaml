@@ -24,7 +24,7 @@ spec:
         - name: gitApiUrl
           value: {{ $.Values.kargo.gitApi.url }}
         - name: gitApiToken
-          value: "${{ "{{" }} secrets.git-api-token {{ "}}" }}"
+          value: "${{ "{{" }} secret('git-api-token').password {{ "}}" }}"
       steps:
         - task:
             name: create-git-tag
