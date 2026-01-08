@@ -7,13 +7,15 @@ metadata:
   namespace: {{ .Values.kargo.project.name }}
 spec:
   promotionPolicies:
-    {{- if and .Values.kargo.stages.stage (eq .Values.global.argoApp.environment "stage") }}
-    - stage: stage
-      autoPromotionEnabled: {{ .Values.kargo.projectConfig.autoPromotionEnabled | default false }}
+    {{- range .Values.kargo.apps }}
+    {{- if and .enabled (eq $.Values.global.argoApp.environment "stage") }}
+    - stage: {{ .name }}-stage
+      autoPromotionEnabled: true
     {{- end }}
-    {{- if and .Values.kargo.stages.prod (eq .Values.global.argoApp.environment "prod") }}
-    - stage: prod
-      autoPromotionEnabled: {{ .Values.kargo.projectConfig.autoPromotionEnabled | default false }}
+    {{- if and .enabled (eq $.Values.global.argoApp.environment "prod") }}
+    - stage: {{ .name }}-prod
+      autoPromotionEnabled: false
+    {{- end }}
     {{- end }}
 {{- end }}
 
