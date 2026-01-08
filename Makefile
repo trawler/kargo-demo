@@ -75,12 +75,5 @@ status:
 
 # Port-forward ArgoCD servers
 port-forward:
-	@echo "Starting port-forwards for ArgoCD servers..."
-	@echo "Stage Control ArgoCD: http://localhost:8080"
-	@echo "Prod Control ArgoCD: http://localhost:8081"
-	@echo ""
-	@echo "Press Ctrl+C to stop"
-	@kubectl --context kind-stage-control port-forward -n argocd svc/argocd-server 8080:443 --address=127.0.0.1 & \
-	kubectl --context kind-prod-control port-forward -n argocd svc/argocd-server 8081:443 --address=127.0.0.1 & \
-	wait
-
+	@echo "Starting port-forwards for ArgoCD and Kargo servers..."
+	@$(BASH) $(SCRIPTS_DIR)/port-forward-all.sh
