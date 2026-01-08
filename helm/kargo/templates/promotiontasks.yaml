@@ -11,7 +11,7 @@ spec:
     - uses: yaml-parse
       as: parse-version
       config:
-        path: helm/${{ "{{" }} vars.appName {{ "}}" }}/Chart.yaml
+        path: Chart.yaml
         outputs:
           - name: depVersion
             fromExpression: dependencies[0].version
