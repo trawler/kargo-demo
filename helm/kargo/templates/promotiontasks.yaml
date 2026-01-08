@@ -24,52 +24,6 @@ spec:
           - name: chartVersion
             fromExpression: version
     
-    - uses: script
-      vars:
-        - name: depVersion
-          value: ${{ "{{" }} steps.parse-version.outputs.depVersion {{ "}}" }}
-        - name: chartVersion
-          value: ${{ "{{" }} steps.parse-version.outputs.chartVersion {{ "}}" }}
-        - name: stripPrefix
-          value: "true"
-      config:
-        script: |
-          VERSION=""
-          if [ -n "$depVersion" ] && [ "$depVersion" != "null" ]; then
-            VERSION="$depVersion"
-          elif [ -n "$chartVersion" ] && [ "$chartVersion" != "null" ]; then
-            VERSION="$chartVersion"
-          fi
-          
-          if [ -z "$VERSION" ]; then
-            echo "Error: Could not extract version from Chart.yaml"
-            exit 1
-          fi
-          
-          # Strip 'v' prefix if present
-          if [ "$stripPrefix" == "true" ]; then
-            VERSION=$(echo "$VERSION" | sed 's/^v//')
-          fi
-          
-          # Validate version format
-          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "Error: Version format invalid: $VERSION"
-            exit 1
-          fi
-          
-          echo "VERSION=$VERSION" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
-    
-    - uses: script
-      vars:
-        - name: appName
-          value: ${{ "{{" }} vars.appName {{ "}}" }}
-        - name: version
-          value: ${{ "{{" }} env.VERSION {{ "}}" }}
-      config:
-        script: |
-          TAG_NAME="${appName}-v${version}"
-          echo "TAG_NAME=$TAG_NAME" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
-    
     - uses: http
       config:
         url: ${{ "{{" }} vars.gitApiUrl {{ "}}" }}/repos/trawler/kargo-demo/git/refs
@@ -79,7 +33,7 @@ spec:
           Accept: application/vnd.github.v3+json
         body: |
           {
-            "ref": "refs/tags/${{ "{{" }} env.TAG_NAME {{ "}}" }}",
+            "ref": "refs/tags/${{ "{{" }} vars.appName {{ "}}" }}-v${{ "{{" }} steps.parse-version.outputs.depVersion {{ "}}" }}",
             "sha": "${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}"
           }
 
@@ -91,38 +45,25 @@ metadata:
   namespace: {{ .Values.kargo.project.name }}
 spec:
   steps:
-    # Step 1: Extract tag name from Freight
-    - uses: script
-      vars:
-        - name: freightTag
-          value: ${{ "{{" }} freight.tag {{ "}}" }}
+    - uses: git-clone
       config:
-        script: |
-          if [ -z "$freightTag" ]; then
-            echo "Error: No tag found in freight"
-            exit 1
-          fi
-          # Extract app name from tag (format: appName-v1.2.3)
-          APP_NAME=$(echo "$freightTag" | sed 's/-v[0-9].*$//')
-          echo "APP_NAME=$APP_NAME" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
-          echo "TAG_NAME=$freightTag" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
+        repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
+        checkout:
+          - branch: main
+            path: ./src
     
-    # Step 2: Update each ApplicationSet file
-    # Note: This updates the first file - may need to loop for multiple files
     - uses: yaml-update
       config:
-        path: ${{ "{{" }} vars.applicationsetFiles[0] {{ "}}" }}
+        path: ./src/${{ "{{" }} vars.applicationsetFiles[0] {{ "}}" }}
         updates:
-          - key: .spec.generators[0].list.elements[] | select(.appName == "${{ "{{" }} env.APP_NAME {{ "}}" }}") | .appRevision
-            value: ${{ "{{" }} env.TAG_NAME {{ "}}" }}
+          - key: .spec.generators[0].list.elements[] | select(.appName == "${{ "{{" }} freight.tag | split("-v")[0] {{ "}}" }}") | .appRevision
+            value: ${{ "{{" }} freight.tag {{ "}}" }}
     
-    # Step 3: Commit and push changes
-    # Note: Verify if Kargo has a native git step for commits/pushes, or if we need HTTP API
-    - uses: git
+    - uses: git-commit
       config:
-        commit:
-          message: "chore(${{ "{{" }} env.APP_NAME {{ "}}" }}): update to ${{ "{{" }} env.TAG_NAME {{ "}}" }}"
-        push:
-          branch: main
+        message: "chore(${{ "{{" }} freight.tag | split("-v")[0] {{ "}}" }}): update to ${{ "{{" }} freight.tag {{ "}}" }}"
+    
+    - uses: git-push
+      config:
+        branch: main
 {{- end }}
-
