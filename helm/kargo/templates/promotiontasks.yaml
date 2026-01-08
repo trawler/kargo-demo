@@ -11,7 +11,7 @@ spec:
     - uses: yaml-parse
       as: parse-version
       config:
-        path: ./repo/helm/${{ "{{" }} vars.appName {{ "}}" }}/Chart.yaml
+        path: helm/${{ "{{" }} vars.appName {{ "}}" }}/Chart.yaml
         outputs:
           - name: depVersion
             fromExpression: dependencies[0].version
@@ -108,7 +108,7 @@ spec:
     # Note: This updates the first file - may need to loop for multiple files
     - uses: yaml-update
       config:
-        path: ./repo/${{ "{{" }} vars.applicationsetFiles[0] {{ "}}" }}
+        path: ${{ "{{" }} vars.applicationsetFiles[0] {{ "}}" }}
         updates:
           - key: .spec.generators[0].list.elements[] | select(.appName == "${{ "{{" }} env.APP_NAME {{ "}}" }}") | .appRevision
             value: ${{ "{{" }} env.TAG_NAME {{ "}}" }}
