@@ -12,12 +12,12 @@ spec:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
         checkout:
           - commit: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
-            path: ./
+            path: ./src
     
     - uses: yaml-parse
       as: parse-version
       config:
-        path: helm/${{ "{{" }} vars.appName {{ "}}" }}/Chart.yaml
+        path: ./src/helm/${{ "{{" }} vars.appName {{ "}}" }}/Chart.yaml
         outputs:
           - name: depVersion
             fromExpression: dependencies[0].version
