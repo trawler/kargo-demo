@@ -11,7 +11,7 @@ spec:
       config:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
         checkout:
-          - commit: ${{ "{{" }} freight.git.commits[0].id {{ "}}" }}
+          - commit: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
             path: ./
     
     - uses: yaml-parse
