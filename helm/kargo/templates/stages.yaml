@@ -8,8 +8,12 @@ metadata:
   name: {{ .name }}-stage
   namespace: {{ $.Values.kargo.project.name }}
 spec:
-  subscriptions:
-    warehouse: {{ .name }}-warehouse
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: {{ .name }}-warehouse
+      sources:
+        direct: true
   promotionTemplate:
     spec:
       vars:
@@ -34,8 +38,12 @@ metadata:
   name: {{ .name }}-prod
   namespace: {{ $.Values.kargo.project.name }}
 spec:
-  subscriptions:
-    warehouse: {{ .name }}-warehouse
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: {{ .name }}-warehouse
+      sources:
+        direct: true
   promotionTemplate:
     spec:
       vars:
