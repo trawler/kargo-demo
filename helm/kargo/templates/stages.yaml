@@ -1,61 +1,55 @@
 {{- if and .Values.kargo.stages.enabled .Values.kargo.project.enabled }}
-{{- if eq .Values.global.argoApp.environment "stage" }}
+{{- range .Values.kargo.apps }}
+{{- if and .enabled (eq $.Values.global.argoApp.environment "stage") }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
-  name: stage
-  namespace: {{ .Values.kargo.project.name }}
+  name: {{ .name }}-stage
+  namespace: {{ $.Values.kargo.project.name }}
 spec:
-  requestedFreight:
-    - origin:
-        kind: Warehouse
-        name: {{ .Values.kargo.warehouse.name }}
-      sources:
-        direct: true
+  subscriptions:
+    warehouse: {{ .name }}-warehouse
   promotionTemplate:
     spec:
       vars:
+        - name: appName
+          value: {{ .name }}
         - name: repoURL
-          value: {{ .Values.kargo.warehouse.repoURL }}
+          value: {{ $.Values.kargo.warehouse.repoURL }}
+        - name: gitApiUrl
+          value: {{ $.Values.kargo.gitApi.url }}
+        - name: gitApiToken
+          value: "${{ "{{" }} secrets.git-api-token {{ "}}" }}"
       steps:
-        # TODO: Create PromotionTask for complex logic:
-        # - Parse commit message to detect updated apps (convention-based)
-        # - Extract version from Chart.yaml for each app
-        # - Create tags for each updated app
-        # For now, this is a placeholder that needs PromotionTask implementation
         - task:
-            name: create-app-tags
+            name: create-git-tag
             kind: PromotionTask
 {{- end }}
-{{- if eq .Values.global.argoApp.environment "prod" }}
+{{- if and .enabled (eq $.Values.global.argoApp.environment "prod") }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
-  name: prod
-  namespace: {{ .Values.kargo.project.name }}
+  name: {{ .name }}-prod
+  namespace: {{ $.Values.kargo.project.name }}
 spec:
-  requestedFreight:
-    - origin:
-        kind: Warehouse
-        name: {{ .Values.kargo.warehouse.name }}
-      sources:
-        direct: true
+  subscriptions:
+    warehouse: {{ .name }}-warehouse
   promotionTemplate:
     spec:
       vars:
+        - name: appName
+          value: {{ .name }}
         - name: repoURL
-          value: {{ .Values.kargo.warehouse.repoURL }}
+          value: {{ $.Values.kargo.warehouse.repoURL }}
+        - name: applicationsetFiles
+          value: {{ .applicationsetFiles | toJson }}
       steps:
-        # TODO: Create PromotionTask for complex logic:
-        # - Parse tag name to extract app name
-        # - Update ApplicationSet files with new tag
-        # - Commit and push changes
-        # For now, this is a placeholder that needs PromotionTask implementation
         - task:
             name: update-applicationset
             kind: PromotionTask
+{{- end }}
 {{- end }}
 {{- end }}
 

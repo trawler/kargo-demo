@@ -1,0 +1,28 @@
+{{- if and .Values.kargo.warehouse.enabled .Values.kargo.project.enabled }}
+{{- range .Values.kargo.apps }}
+{{- if .enabled }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: {{ .name }}-warehouse
+  namespace: {{ $.Values.kargo.project.name }}
+spec:
+  subscriptions:
+    - git:
+        repoURL: {{ $.Values.kargo.warehouse.repoURL }}
+        {{- if eq $.Values.global.argoApp.environment "stage" }}
+        branch: {{ $.Values.kargo.warehouse.branch | default "main" }}
+        includePaths:
+          - helm/{{ .name }}  # Only watch this app's path
+        {{- else if eq $.Values.global.argoApp.environment "prod" }}
+        allowTags: ^{{ .name }}-v[0-9]+\.[0-9]+\.[0-9]+$  # Only watch this app's tags
+        {{- end }}
+        commitSelectionStrategy: NewestFromBranch
+        discoveryLimit: 20
+        strictSemvers: true
+  interval: {{ $.Values.kargo.warehouse.interval }}
+{{- end }}
+{{- end }}
+{{- end }}
+

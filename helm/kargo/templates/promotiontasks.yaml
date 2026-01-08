@@ -1,0 +1,125 @@
+{{- if .Values.kargo.project.enabled }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: create-git-tag
+  namespace: {{ .Values.kargo.project.name }}
+spec:
+  steps:
+    # Step 1: Extract version from Chart.yaml
+    - uses: yaml-parse
+      as: parse-version
+      config:
+        path: ./repo/helm/${{ "{{" }} vars.appName {{ "}}" }}/Chart.yaml
+        outputs:
+          - name: depVersion
+            fromExpression: dependencies[0].version
+          - name: chartVersion
+            fromExpression: version
+    
+    # Step 2: Select version (priority: depVersion > chartVersion)
+    - uses: script
+      vars:
+        - name: depVersion
+          value: ${{ "{{" }} steps.parse-version.outputs.depVersion {{ "}}" }}
+        - name: chartVersion
+          value: ${{ "{{" }} steps.parse-version.outputs.chartVersion {{ "}}" }}
+        - name: stripPrefix
+          value: "true"
+      config:
+        script: |
+          VERSION=""
+          if [ -n "$depVersion" ] && [ "$depVersion" != "null" ]; then
+            VERSION="$depVersion"
+          elif [ -n "$chartVersion" ] && [ "$chartVersion" != "null" ]; then
+            VERSION="$chartVersion"
+          fi
+          
+          if [ -z "$VERSION" ]; then
+            echo "Error: Could not extract version from Chart.yaml"
+            exit 1
+          fi
+          
+          # Strip 'v' prefix if present
+          if [ "$stripPrefix" == "true" ]; then
+            VERSION=$(echo "$VERSION" | sed 's/^v//')
+          fi
+          
+          # Validate version format
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Error: Version format invalid: $VERSION"
+            exit 1
+          fi
+          
+          echo "VERSION=$VERSION" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
+    
+    # Step 3: Compose tag name
+    - uses: script
+      vars:
+        - name: appName
+          value: ${{ "{{" }} vars.appName {{ "}}" }}
+        - name: version
+          value: ${{ "{{" }} env.VERSION {{ "}}" }}
+      config:
+        script: |
+          TAG_NAME="${appName}-v${version}"
+          echo "TAG_NAME=$TAG_NAME" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
+    
+    # Step 4: Create Git tag via HTTP API (no native git-tag action in Kargo)
+    - uses: http
+      config:
+        url: ${{ "{{" }} vars.gitApiUrl {{ "}}" }}/repos/trawler/kargo-demo/git/refs
+        method: POST
+        headers:
+          Authorization: Bearer ${{ "{{" }} vars.gitApiToken {{ "}}" }}
+          Accept: application/vnd.github.v3+json
+        body: |
+          {
+            "ref": "refs/tags/${{ "{{" }} env.TAG_NAME {{ "}}" }}",
+            "sha": "${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}"
+          }
+
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: update-applicationset
+  namespace: {{ .Values.kargo.project.name }}
+spec:
+  steps:
+    # Step 1: Extract tag name from Freight
+    - uses: script
+      vars:
+        - name: freightTag
+          value: ${{ "{{" }} freight.tag {{ "}}" }}
+      config:
+        script: |
+          if [ -z "$freightTag" ]; then
+            echo "Error: No tag found in freight"
+            exit 1
+          fi
+          # Extract app name from tag (format: appName-v1.2.3)
+          APP_NAME=$(echo "$freightTag" | sed 's/-v[0-9].*$//')
+          echo "APP_NAME=$APP_NAME" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
+          echo "TAG_NAME=$freightTag" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
+    
+    # Step 2: Update each ApplicationSet file
+    # Note: This updates the first file - may need to loop for multiple files
+    - uses: yaml-update
+      config:
+        path: ./repo/${{ "{{" }} vars.applicationsetFiles[0] {{ "}}" }}
+        updates:
+          - key: .spec.generators[0].list.elements[] | select(.appName == "${{ "{{" }} env.APP_NAME {{ "}}" }}") | .appRevision
+            value: ${{ "{{" }} env.TAG_NAME {{ "}}" }}
+    
+    # Step 3: Commit and push changes
+    # Note: Verify if Kargo has a native git step for commits/pushes, or if we need HTTP API
+    - uses: git
+      config:
+        commit:
+          message: "chore(${{ "{{" }} env.APP_NAME {{ "}}" }}): update to ${{ "{{" }} env.TAG_NAME {{ "}}" }}"
+        push:
+          branch: main
+{{- end }}
+
