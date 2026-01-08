@@ -7,18 +7,23 @@ metadata:
   namespace: {{ .Values.kargo.project.name }}
 spec:
   steps:
-    # Step 1: Extract version from Chart.yaml
+    - uses: git-clone
+      config:
+        repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
+        checkout:
+          - commit: ${{ "{{" }} freight.git.commits[0].id {{ "}}" }}
+            path: ./
+    
     - uses: yaml-parse
       as: parse-version
       config:
-        path: Chart.yaml
+        path: helm/${{ "{{" }} vars.appName {{ "}}" }}/Chart.yaml
         outputs:
           - name: depVersion
             fromExpression: dependencies[0].version
           - name: chartVersion
             fromExpression: version
     
-    # Step 2: Select version (priority: depVersion > chartVersion)
     - uses: script
       vars:
         - name: depVersion
@@ -54,7 +59,6 @@ spec:
           
           echo "VERSION=$VERSION" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
     
-    # Step 3: Compose tag name
     - uses: script
       vars:
         - name: appName
@@ -66,7 +70,6 @@ spec:
           TAG_NAME="${appName}-v${version}"
           echo "TAG_NAME=$TAG_NAME" >> ${{ "{{" }} env.VARS_FILE {{ "}}" }}
     
-    # Step 4: Create Git tag via HTTP API (no native git-tag action in Kargo)
     - uses: http
       config:
         url: ${{ "{{" }} vars.gitApiUrl {{ "}}" }}/repos/trawler/kargo-demo/git/refs
