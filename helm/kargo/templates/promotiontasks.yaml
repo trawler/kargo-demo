@@ -40,8 +40,7 @@ spec:
       url: ${{ "{{" }} vars.gitApiUrl {{ "}}" }}/repos/trawler/kargo-demo/git/refs
       method: POST
       timeout: 10s
-      successExpression: ${{ "{{" }} response.status == 201 {{ "}}" }}
-      failureExpression: ${{ "{{" }} response.body.message == "Rate limit exceeded" {{ "}}" }}
+      successExpression: "response != nil && response.status == 201"
       headers:
       - name: Authorization
         value: Bearer ${{ "{{" }} vars.gitApiToken {{ "}}" }}
