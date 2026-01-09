@@ -1,0 +1,48 @@
+{{- if .Values.kargo.project.enabled }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: create-git-tag
+  namespace: {{ .Values.kargo.project.name }}
+spec:
+  steps:
+
+  # Step: Clone the repository
+  - uses: git-clone
+    config:
+      repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
+      checkout:
+      - commit: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
+        path: ./src
+
+  # Step: Parse the version
+  - uses: yaml-parse
+    as: parse-version
+    config:
+      path: ./src/helm/${{ "{{" }} vars.appName {{ "}}" }}/Chart.yaml
+      outputs:
+      - name: depVersion
+        fromExpression: "dependencies[0].version"
+      - name: chartVersion
+        fromExpression: version
+
+  # Step: Create the tag
+  - uses: http
+    vars:
+      - name: tagName
+        value: ${{ "{{" }} vars.appName {{ "}}" }}-${{ "{{" }} outputs['parse-version'].depVersion {{ "}}" }}
+      - name: commitSha
+        value: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
+    config:
+      url: ${{ "{{" }} vars.gitApiUrl {{ "}}" }}/repos/trawler/kargo-demo/git/refs
+      method: POST
+      headers:
+        Authorization: Bearer ${{ "{{" }} vars.gitApiToken {{ "}}" }}
+        Accept: application/vnd.github.v3+json
+      body: |
+        {
+          "ref": "refs/tags/${{ "{{" }} vars.tagName {{ "}}" }}",
+          "sha": "${{ "{{" }} vars.commitSha {{ "}}" }}"
+        }
+{{- end }}
