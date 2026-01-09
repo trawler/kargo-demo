@@ -38,8 +38,10 @@ spec:
       url: ${{ "{{" }} vars.gitApiUrl {{ "}}" }}/repos/trawler/kargo-demo/git/refs
       method: POST
       headers:
-        Authorization: Bearer ${{ "{{" }} vars.gitApiToken {{ "}}" }}
-        Accept: application/vnd.github.v3+json
+      - name: Authorization
+        value: Bearer ${{ "{{" }} vars.gitApiToken {{ "}}" }}
+      - name: Accept
+        value: application/vnd.github.v3+json
       body: |
         {
           "ref": "refs/tags/${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}",
