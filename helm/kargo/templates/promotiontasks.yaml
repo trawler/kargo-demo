@@ -27,13 +27,13 @@ spec:
       - name: chartVersion
         fromExpression: version
 
+  # Step: Compose the tag name
+  - uses: compose-output
+    as: tag-info
+    config:
+      tagName: ${{ "{{" }} vars.appName {{ "}}" }}-${{ "{{" }} task.outputs['parse-version'].depVersion {{ "}}" }}
   # Step: Create the tag
   - uses: http
-    vars:
-      - name: tagName
-        value: ${{ "{{" }} vars.appName {{ "}}" }}-${{ "{{" }} outputs['parse-version'].depVersion {{ "}}" }}
-      - name: commitSha
-        value: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
     config:
       url: ${{ "{{" }} vars.gitApiUrl {{ "}}" }}/repos/trawler/kargo-demo/git/refs
       method: POST
@@ -42,7 +42,7 @@ spec:
         Accept: application/vnd.github.v3+json
       body: |
         {
-          "ref": "refs/tags/${{ "{{" }} vars.tagName {{ "}}" }}",
-          "sha": "${{ "{{" }} vars.commitSha {{ "}}" }}"
+          "ref": "refs/tags/${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}",
+          "sha": "${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}"
         }
 {{- end }}
