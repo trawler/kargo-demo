@@ -43,8 +43,8 @@ spec:
       - name: Accept
         value: application/vnd.github.v3+json
       body: |
-        {
-          "ref": "refs/tags/${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}",
-          "sha": "${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}"
-        }
+        ${{ "{{" }} quote({
+          "ref": "refs/tags/" + task.outputs['tag-info'].tagName,
+          "sha": commitFrom(vars.repoURL).ID
+        }) {{ "}}" }}
 {{- end }}
