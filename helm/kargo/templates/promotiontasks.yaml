@@ -10,6 +10,7 @@ spec:
 
   # Step: Clone the repository
   - uses: git-clone
+    as: clone-repo
     config:
       repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
       checkout:
@@ -34,6 +35,7 @@ spec:
       tagName: ${{ "{{" }} vars.appName {{ "}}" }}-${{ "{{" }} task.outputs['parse-version'].depVersion {{ "}}" }}
   # Step: Create the tag
   - uses: http
+    as: create-tag
     config:
       url: ${{ "{{" }} vars.gitApiUrl {{ "}}" }}/repos/trawler/kargo-demo/git/refs
       method: POST
