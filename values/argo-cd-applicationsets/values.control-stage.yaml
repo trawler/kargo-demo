@@ -4,3 +4,12 @@ global:
 
 postgresqlClusters:
   enabled: true
+
+# App revisions for stage environment (mostly main/head)
+apps:
+  cert-manager:
+    revision: main
+  argo-cd-applicationsets:
+    revision: main
+  kargo:
+    revision: main

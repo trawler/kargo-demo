@@ -1,4 +1,4 @@
-{{- if and .Values.kargo.stages.enabled .Values.kargo.project.enabled }}
+{{- if .Values.kargo.project.enabled }}
 {{- range .Values.kargo.apps }}
 {{- if and .enabled (eq $.Values.global.argoApp.environment "stage") }}
 ---
@@ -25,6 +25,10 @@ spec:
           value: {{ $.Values.kargo.gitApi.url }}
         - name: gitApiToken
           value: "${{ "{{" }} secret('git-api-token').password {{ "}}" }}"
+        - name: gitRepoOwner
+          value: {{ $.Values.kargo.gitApi.repoOwner }}
+        - name: gitRepoName
+          value: {{ $.Values.kargo.gitApi.repoName }}
       steps:
         - task:
             name: create-git-tag
@@ -51,12 +55,35 @@ spec:
           value: {{ .name }}
         - name: repoURL
           value: {{ $.Values.kargo.warehouse.repoURL }}
-        - name: applicationsetFiles
-          value: {{ .applicationsetFiles | toJson }}
+        - name: gitApiUrl
+          value: {{ $.Values.kargo.gitApi.url }}
+        - name: gitApiToken
+          value: "${{ "{{" }} secret('git-api-token').password {{ "}}" }}"
+        - name: gitRepoOwner
+          value: {{ $.Values.kargo.gitApi.repoOwner }}
+        - name: gitRepoName
+          value: {{ $.Values.kargo.gitApi.repoName }}
       steps:
+        {{- $appName := .name }}
+        {{- $defaultPromotionTasks := $.Values.kargo.apps._default.promotionTasks | default (list "update-applicationset") }}
+        {{- $promotionTasks := .promotionTasks | default $defaultPromotionTasks }}
+        {{- range $promotionTasks }}
+        {{- $taskName := "" }}
+        {{- if typeIs "string" . }}
+        {{- $taskName = . }}
+        {{- else }}
+        {{- $taskName = .task }}
+        {{- end }}
+        {{- if eq $taskName "update-applicationset" }}
         - task:
             name: update-applicationset
             kind: PromotionTask
+        {{- else }}
+        - task:
+            name: {{ $taskName }}
+            kind: PromotionTask
+        {{- end }}
+        {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

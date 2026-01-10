@@ -22,8 +22,10 @@ spec:
                 apiserverIp: 172.20.0.16
         - list:
             elements:
-              - appName: cert-manager
-                appRevision: cert-manager-1.17.1
+{{- range $appName, $appConfig := .Values.apps }}
+              - appName: {{ $appName }}
+                appRevision: {{ $appConfig.revision }}
+{{- end }}
   goTemplate: true
   goTemplateOptions:
   - missingkey=error

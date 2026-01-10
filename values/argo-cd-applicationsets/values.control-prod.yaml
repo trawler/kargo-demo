@@ -4,3 +4,12 @@ global:
 
 postgresqlClusters:
   enabled: true
+
+# App revisions for prod environment
+apps:
+  cert-manager:
+    revision: cert-manager-1.17.1
+  argo-cd-applicationsets:
+    revision: main
+  kargo:
+    revision: main

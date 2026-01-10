@@ -11,12 +11,10 @@ spec:
   generators:
     - list:
         elements:
-          - appName: cert-manager
-            appRevision: main
-          - appName: argo-cd-applicationsets
-            appRevision: main
-          - appName: kargo
-            appRevision: main
+{{- range $appName, $appConfig := .Values.apps }}
+          - appName: {{ $appName }}
+            appRevision: {{ $appConfig.revision }}
+{{- end }}
   goTemplate: true
   goTemplateOptions:
   - missingkey=error

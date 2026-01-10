@@ -50,10 +50,12 @@ kargo:
     interval: 1m0s
     # branch and allowTags are set per-environment in values.stage-control.yaml and values.prod-control.yaml
 
-  # Git API configuration for tag creation
+  # Git API configuration for tag creation and PR creation
   gitApi:
     url: https://api.github.com  # or https://gitlab.com/api/v4 for GitLab
-    # Token stored in Kubernetes Secret: kargo-git-api-token
+    repoOwner: trawler  # GitHub/GitLab organization or user
+    repoName: kargo-demo  # Repository name
+    # Token stored in Kubernetes Secret: git-api-token
 
   # Version extraction defaults
   versionExtraction:
@@ -68,6 +70,11 @@ kargo:
 
   # Per-app configuration
   apps:
+    # Default promotion tasks for all apps (can be overridden per app)
+    _default:
+      promotionTasks:
+        # Default: Single task that generates all ApplicationSet files using helm-template
+        - update-applicationset
     cert-manager:
       enabled: true
       name: cert-manager
@@ -78,19 +85,9 @@ kargo:
       #       fromExpression: dependencies[0].version
       #       priority: 1
       #   stripPrefix: true
-      # ApplicationSet files to update in prod (relative to repo root)
-      applicationsetFiles:
-        - helm/argo-cd-applicationsets/templates/applicationset-prod-control-control.yaml
-        - helm/argo-cd-applicationsets/templates/applicationset-prod-control-workload-clusters.yaml
+      # Promotion tasks configuration for prod (optional)
+      # Default: If not specified, uses update-applicationset which generates all ApplicationSet files
+      # The update-applicationset task uses helm-template to generate all 4 ApplicationSet files
+      promotionTasks:
+        - update-applicationset
 
-  # Stages configuration
-  stages:
-    enabled: true
-    stage:
-      apps:
-        - name: child-cert-manager-stage-workload
-          namespace: argocd
-    prod:
-      apps:
-        - name: child-cert-manager-prod-workload
-          namespace: argocd

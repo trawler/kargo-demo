@@ -14,7 +14,7 @@ spec:
     {{- end }}
     {{- if and .enabled (eq $.Values.global.argoApp.environment "prod") }}
     - stage: {{ .name }}-prod
-      autoPromotionEnabled: false
+      autoPromotionEnabled: true
     {{- end }}
     {{- end }}
 {{- end }}
