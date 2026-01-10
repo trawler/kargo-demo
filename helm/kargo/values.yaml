@@ -73,21 +73,13 @@ kargo:
     # Default promotion tasks for all apps (can be overridden per app)
     _default:
       promotionTasks:
-        # Default: Single task that generates all ApplicationSet files using helm-template
-        - update-applicationset
+        # Default: Only update controlApps (for control-only apps like kargo, argo-cd-applicationsets)
+        - update-applicationset-control
     cert-manager:
       enabled: true
       name: cert-manager
-      # Optional: override version extraction per app
-      # versionExtraction:
-      #   expressions:
-      #     - name: depVersion
-      #       fromExpression: dependencies[0].version
-      #       priority: 1
-      #   stripPrefix: true
-      # Promotion tasks configuration for prod (optional)
-      # Default: If not specified, uses update-applicationset which generates all ApplicationSet files
-      # The update-applicationset task uses helm-template to generate all 4 ApplicationSet files
+      # cert-manager exists in both controlApps and workloadApps, so run both tasks
       promotionTasks:
-        - update-applicationset
+        - update-applicationset-control
+        - update-applicationset-workload
 

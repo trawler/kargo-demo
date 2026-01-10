@@ -3,14 +3,14 @@ postgresqlClusters:
 
 # Control cluster apps (defaults - overridden by environment-specific values files)
 controlApps:
-  - appName: cert-manager
+  cert-manager:
     appRevision: main
-  - appName: argo-cd-applicationsets
+  argo-cd-applicationsets:
     appRevision: main
-  - appName: kargo
+  kargo:
     appRevision: main
 
 # Workload cluster apps (defaults - overridden by environment-specific values files)
 workloadApps:
-  - appName: cert-manager
+  cert-manager:
     appRevision: main

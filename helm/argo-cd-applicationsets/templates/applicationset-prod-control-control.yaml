@@ -11,9 +11,9 @@ spec:
   generators:
     - list:
         elements:
-{{- range .Values.controlApps }}
-          - appName: {{ .appName }}
-            appRevision: {{ .appRevision }}
+{{- range $appName, $appConfig := .Values.controlApps }}
+          - appName: {{ $appName }}
+            appRevision: {{ $appConfig.appRevision }}
 {{- end }}
   goTemplate: true
   goTemplateOptions:

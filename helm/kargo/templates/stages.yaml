@@ -74,15 +74,9 @@ spec:
         {{- else }}
         {{- $taskName = .task }}
         {{- end }}
-        {{- if eq $taskName "update-applicationset" }}
-        - task:
-            name: update-applicationset
-            kind: PromotionTask
-        {{- else }}
         - task:
             name: {{ $taskName }}
             kind: PromotionTask
-        {{- end }}
         {{- end }}
 {{- end }}
 {{- end }}

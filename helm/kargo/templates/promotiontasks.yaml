@@ -56,7 +56,7 @@ spec:
 apiVersion: kargo.akuity.io/v1alpha1
 kind: PromotionTask
 metadata:
-  name: update-applicationset
+  name: update-applicationset-control
   namespace: {{ .Values.kargo.project.name }}
 spec:
   steps:
@@ -75,19 +75,16 @@ spec:
       config:
         tagName: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
 
-    # Step 3: Update app version in prod values file
-    # Uses vars.appName from the Stage context to know which app to update
+    # Step 3: Update app version in controlApps
     - uses: yaml-update
       as: update-prod-values
       config:
         path: ./src/values/argo-cd-applicationsets/values.control-prod.yaml
         updates:
-          - key: apps.${{ "{{" }} vars.appName {{ "}}" }}.revision
+          - key: controlApps.${{ "{{" }} vars.appName {{ "}}" }}.appRevision
             value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
 
     # Step 4: Generate ApplicationSet files using helm-template
-    # Only generate prod ApplicationSets since this is a prod promotion
-    # Stage ApplicationSets remain unchanged
     - uses: helm-template
       as: generate-appsets
       config:
@@ -103,7 +100,7 @@ spec:
       as: commit-changes
       config:
         path: ./src
-        message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
+        message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update controlApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
 
     # Step 6: Push the changes to a new branch (generates branch automatically)
     - uses: git-push
@@ -119,6 +116,73 @@ spec:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
         sourceBranch: ${{ "{{" }} outputs.push-changes.branch {{ "}}" }}
         targetBranch: main
-        title: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
-        description: "Automated PR to update ApplicationSet files for ${{ "{{" }} vars.appName {{ "}}" }} to tag ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
+        title: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update controlApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
+        description: "Automated PR to update controlApps ApplicationSet for ${{ "{{" }} vars.appName {{ "}}" }} to tag ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
+
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: update-applicationset-workload
+  namespace: {{ .Values.kargo.project.name }}
+spec:
+  steps:
+    # Step 1: Clone the repository at main branch
+    - uses: git-clone
+      as: clone-repo
+      config:
+        repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
+        checkout:
+          - branch: main
+            path: ./src
+
+    # Step 2: Get the tag name from freight (the git tag created by warehouse)
+    - uses: compose-output
+      as: tag-info
+      config:
+        tagName: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
+
+    # Step 3: Update app version in workloadApps
+    - uses: yaml-update
+      as: update-prod-values
+      config:
+        path: ./src/values/argo-cd-applicationsets/values.control-prod.yaml
+        updates:
+          - key: workloadApps.${{ "{{" }} vars.appName {{ "}}" }}.appRevision
+            value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
+
+    # Step 4: Generate ApplicationSet files using helm-template
+    - uses: helm-template
+      as: generate-appsets
+      config:
+        path: ./src/helm/argo-cd-applicationsets
+        releaseName: argo-cd-applicationsets
+        namespace: argocd
+        valuesFiles:
+          - ./src/values/argo-cd-applicationsets/values.control-prod.yaml
+        outPath: ./src/apps/argo-cd-applicationsets
+
+    # Step 5: Commit the changes
+    - uses: git-commit
+      as: commit-changes
+      config:
+        path: ./src
+        message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update workloadApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
+
+    # Step 6: Push the changes to a new branch (generates branch automatically)
+    - uses: git-push
+      as: push-changes
+      config:
+        path: ./src
+        generateTargetBranch: true
+
+    # Step 7: Create Pull Request
+    - uses: git-open-pr
+      as: create-pr
+      config:
+        repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
+        sourceBranch: ${{ "{{" }} outputs.push-changes.branch {{ "}}" }}
+        targetBranch: main
+        title: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update workloadApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
+        description: "Automated PR to update workloadApps ApplicationSet for ${{ "{{" }} vars.appName {{ "}}" }} to tag ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
 {{- end }}

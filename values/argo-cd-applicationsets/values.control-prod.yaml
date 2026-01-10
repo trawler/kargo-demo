@@ -7,14 +7,14 @@ postgresqlClusters:
 
 # Control cluster apps for prod environment
 controlApps:
-  - appName: cert-manager
+  cert-manager:
     appRevision: cert-manager-1.17.1
-  - appName: argo-cd-applicationsets
+  argo-cd-applicationsets:
     appRevision: main
-  - appName: kargo
+  kargo:
     appRevision: main
 
 # Workload cluster apps for prod environment
 workloadApps:
-  - appName: cert-manager
+  cert-manager:
     appRevision: cert-manager-1.17.1
