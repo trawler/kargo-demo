@@ -86,7 +86,8 @@ spec:
             value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
 
     # Step 4: Generate ApplicationSet files using helm-template
-    # Generates all ApplicationSet files (prod and stage) from the updated values
+    # Only generate prod ApplicationSets since this is a prod promotion
+    # Stage ApplicationSets remain unchanged
     - uses: helm-template
       as: generate-appsets
       config:
@@ -95,7 +96,6 @@ spec:
         namespace: argocd
         valuesFiles:
           - ./src/values/argo-cd-applicationsets/values.control-prod.yaml
-          - ./src/values/argo-cd-applicationsets/values.control-stage.yaml
         outPath: ./src/apps/argo-cd-applicationsets
 
     # Step 5: Commit the changes

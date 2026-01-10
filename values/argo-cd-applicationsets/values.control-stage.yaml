@@ -5,11 +5,16 @@ global:
 postgresqlClusters:
   enabled: true
 
-# App revisions for stage environment (mostly main/head)
-apps:
-  cert-manager:
-    revision: main
-  argo-cd-applicationsets:
-    revision: main
-  kargo:
-    revision: main
+# Control cluster apps for stage environment
+controlApps:
+  - appName: cert-manager
+    appRevision: main
+  - appName: argo-cd-applicationsets
+    appRevision: main
+  - appName: kargo
+    appRevision: main
+
+# Workload cluster apps for stage environment
+workloadApps:
+  - appName: cert-manager
+    appRevision: main

@@ -22,9 +22,9 @@ spec:
                 apiserverIp: 172.20.0.6
         - list:
             elements:
-{{- range $appName, $appConfig := .Values.apps }}
-              - appName: {{ $appName }}
-                appRevision: {{ $appConfig.revision }}
+{{- range .Values.workloadApps }}
+              - appName: {{ .appName }}
+                appRevision: {{ .appRevision }}
 {{- end }}
   goTemplate: true
   goTemplateOptions:

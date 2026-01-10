@@ -1,20 +1,16 @@
 postgresqlClusters:
   enabled: false
 
-# App versions configuration - these values should come from helm/kargo/hack/helm/app-versions/values.yaml
-# This file can be used as a fallback or for local development
-apps:
-  cert-manager:
-    revision: cert-manager-1.17.1
-
-# Control cluster apps (apps that run on control clusters)
+# Control cluster apps (defaults - overridden by environment-specific values files)
 controlApps:
   - appName: cert-manager
+    appRevision: main
   - appName: argo-cd-applicationsets
-    revision: main
+    appRevision: main
   - appName: kargo
-    revision: main
+    appRevision: main
 
-# Workload cluster apps (apps that run on workload clusters)
+# Workload cluster apps (defaults - overridden by environment-specific values files)
 workloadApps:
   - appName: cert-manager
+    appRevision: main
