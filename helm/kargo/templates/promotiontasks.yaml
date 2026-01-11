@@ -67,19 +67,19 @@ spec:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
         checkout:
           - branch: main
-            path: ./src
+            path: ./src-control
 
     # Step 2: Get the tag name from freight (the git tag created by warehouse)
     - uses: compose-output
       as: tag-info
       config:
-        tagName: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
+        tagName: ${{ "{{" }} commitFrom(vars.repoURL).Tag {{ "}}" }}
 
     # Step 3: Update app version in controlApps
     - uses: yaml-update
       as: update-prod-values
       config:
-        path: ./src/values/argo-cd-applicationsets/values.control-prod.yaml
+        path: ./src-control/values/argo-cd-applicationsets/values.control-prod.yaml
         updates:
           - key: controlApps.${{ "{{" }} vars.appName {{ "}}" }}.appRevision
             value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
@@ -88,33 +88,39 @@ spec:
     - uses: helm-template
       as: generate-appsets
       config:
-        path: ./src/helm/argo-cd-applicationsets
+        path: ./src-control/helm/argo-cd-applicationsets
         releaseName: argo-cd-applicationsets
         namespace: argocd
         valuesFiles:
-          - ./src/values/argo-cd-applicationsets/values.control-prod.yaml
-        outPath: ./src/apps/argo-cd-applicationsets
+          - ./src-control/values/argo-cd-applicationsets/values.control-prod.yaml
+        outPath: ./src-control/helm
 
     # Step 5: Commit the changes
     - uses: git-commit
       as: commit-changes
       config:
-        path: ./src
+        path: ./src-control
         message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update controlApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
 
-    # Step 6: Push the changes to a new branch (generates branch automatically)
+    # Step 6: Generate unique branch name for control
+    - uses: compose-output
+      as: branch-name
+      config:
+        branchName: ${{ "{{" }} "kargo/promotion/" + vars.appName + "-prod-control-" + commitFrom(vars.repoURL).ID {{ "}}" }}
+
+    # Step 7: Push the changes to a new branch
     - uses: git-push
       as: push-changes
       config:
-        path: ./src
-        generateTargetBranch: true
+        path: ./src-control
+        targetBranch: ${{ "{{" }} task.outputs['branch-name'].branchName {{ "}}" }}
 
-    # Step 7: Create Pull Request
+    # Step 8: Create Pull Request
     - uses: git-open-pr
       as: create-pr
       config:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
-        sourceBranch: ${{ "{{" }} task.outputs['push-changes'].branch {{ "}}" }}
+        sourceBranch: ${{ "{{" }} task.outputs['branch-name'].branchName {{ "}}" }}
         targetBranch: main
         title: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update controlApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
         description: "Automated PR to update controlApps ApplicationSet for ${{ "{{" }} vars.appName {{ "}}" }} to tag ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
@@ -134,19 +140,28 @@ spec:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
         checkout:
           - branch: main
-            path: ./src
+            path: ./src-workload
 
-    # Step 2: Get the tag name from freight (the git tag created by warehouse)
+    # Step 2: Clone repo to get tag name for the commit
+    - uses: git-clone
+      as: clone-for-tag
+      config:
+        repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
+        checkout:
+          - commit: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
+            path: ./src-tag-lookup
+
+    # Step 3: Get the tag name using git describe
     - uses: compose-output
       as: tag-info
       config:
-        tagName: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
+        tagName: ${{ "{{" }} commitFrom(vars.repoURL).Tag {{ "}}" }}
 
     # Step 3: Update app version in workloadApps
     - uses: yaml-update
       as: update-prod-values
       config:
-        path: ./src/values/argo-cd-applicationsets/values.control-prod.yaml
+        path: ./src-workload/values/argo-cd-applicationsets/values.control-prod.yaml
         updates:
           - key: workloadApps.${{ "{{" }} vars.appName {{ "}}" }}.appRevision
             value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
@@ -155,33 +170,39 @@ spec:
     - uses: helm-template
       as: generate-appsets
       config:
-        path: ./src/helm/argo-cd-applicationsets
+        path: ./src-workload/helm/argo-cd-applicationsets
         releaseName: argo-cd-applicationsets
         namespace: argocd
         valuesFiles:
-          - ./src/values/argo-cd-applicationsets/values.control-prod.yaml
-        outPath: ./src/apps/argo-cd-applicationsets
+          - ./src-workload/values/argo-cd-applicationsets/values.control-prod.yaml
+        outPath: ./src-workload/helm
 
     # Step 5: Commit the changes
     - uses: git-commit
       as: commit-changes
       config:
-        path: ./src
+        path: ./src-workload
         message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update workloadApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
 
-    # Step 6: Push the changes to a new branch (generates branch automatically)
+    # Step 6: Generate unique branch name for workload
+    - uses: compose-output
+      as: branch-name
+      config:
+        branchName: ${{ "{{" }} "kargo/promotion/" + vars.appName + "-prod-workload-" + commitFrom(vars.repoURL).ID {{ "}}" }}
+
+    # Step 7: Push the changes to a new branch
     - uses: git-push
       as: push-changes
       config:
-        path: ./src
-        generateTargetBranch: true
+        path: ./src-workload
+        targetBranch: ${{ "{{" }} task.outputs['branch-name'].branchName {{ "}}" }}
 
-    # Step 7: Create Pull Request
+    # Step 8: Create Pull Request
     - uses: git-open-pr
       as: create-pr
       config:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
-        sourceBranch: ${{ "{{" }} task.outputs['push-changes'].branch {{ "}}" }}
+        sourceBranch: ${{ "{{" }} task.outputs['branch-name'].branchName {{ "}}" }}
         targetBranch: main
         title: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update workloadApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
         description: "Automated PR to update workloadApps ApplicationSet for ${{ "{{" }} vars.appName {{ "}}" }} to tag ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
