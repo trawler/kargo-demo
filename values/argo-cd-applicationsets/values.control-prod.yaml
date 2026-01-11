@@ -8,7 +8,7 @@ postgresqlClusters:
 # Control cluster apps for prod environment
 controlApps:
   cert-manager:
-    appRevision: cert-manager-1.17.1
+    appRevision: bf2fe67841641900f3480dde5ff7540e82c8b301
   argo-cd-applicationsets:
     appRevision: main
   kargo:
