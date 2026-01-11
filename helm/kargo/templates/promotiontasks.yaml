@@ -67,19 +67,19 @@ spec:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
         checkout:
           - branch: main
-            path: ./src
+            path: ./src-control
 
     # Step 2: Get the tag name from freight (the git tag created by warehouse)
     - uses: compose-output
       as: tag-info
       config:
-        tagName: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
+        tagName: ${{ "{{" }} commitFrom(vars.repoURL).Tag {{ "}}" }}
 
     # Step 3: Update app version in controlApps
     - uses: yaml-update
       as: update-prod-values
       config:
-        path: ./src/values/argo-cd-applicationsets/values.control-prod.yaml
+        path: ./src-control/values/argo-cd-applicationsets/values.control-prod.yaml
         updates:
           - key: controlApps.${{ "{{" }} vars.appName {{ "}}" }}.appRevision
             value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
@@ -88,25 +88,25 @@ spec:
     - uses: helm-template
       as: generate-appsets
       config:
-        path: ./src/helm/argo-cd-applicationsets
+        path: ./src-control/helm/argo-cd-applicationsets
         releaseName: argo-cd-applicationsets
         namespace: argocd
         valuesFiles:
-          - ./src/values/argo-cd-applicationsets/values.control-prod.yaml
-        outPath: ./src/apps/argo-cd-applicationsets
+          - ./src-control/values/argo-cd-applicationsets/values.control-prod.yaml
+        outPath: ./src-control/helm/argo-cd-applicationsets/templates
 
     # Step 5: Commit the changes
     - uses: git-commit
       as: commit-changes
       config:
-        path: ./src
+        path: ./src-control
         message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update controlApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
 
     # Step 6: Push the changes to a new branch (generates branch automatically)
     - uses: git-push
       as: push-changes
       config:
-        path: ./src
+        path: ./src-control
         generateTargetBranch: true
 
     # Step 7: Create Pull Request
@@ -134,19 +134,19 @@ spec:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
         checkout:
           - branch: main
-            path: ./src
+            path: ./src-workload
 
     # Step 2: Get the tag name from freight (the git tag created by warehouse)
     - uses: compose-output
       as: tag-info
       config:
-        tagName: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
+        tagName: ${{ "{{" }} commitFrom(vars.repoURL).Tag {{ "}}" }}
 
     # Step 3: Update app version in workloadApps
     - uses: yaml-update
       as: update-prod-values
       config:
-        path: ./src/values/argo-cd-applicationsets/values.control-prod.yaml
+        path: ./src-workload/values/argo-cd-applicationsets/values.control-prod.yaml
         updates:
           - key: workloadApps.${{ "{{" }} vars.appName {{ "}}" }}.appRevision
             value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
@@ -155,25 +155,25 @@ spec:
     - uses: helm-template
       as: generate-appsets
       config:
-        path: ./src/helm/argo-cd-applicationsets
+        path: ./src-workload/helm/argo-cd-applicationsets
         releaseName: argo-cd-applicationsets
         namespace: argocd
         valuesFiles:
-          - ./src/values/argo-cd-applicationsets/values.control-prod.yaml
-        outPath: ./src/apps/argo-cd-applicationsets
+          - ./src-workload/values/argo-cd-applicationsets/values.control-prod.yaml
+        outPath: ./src-workload/helm/argo-cd-applicationsets/templates
 
     # Step 5: Commit the changes
     - uses: git-commit
       as: commit-changes
       config:
-        path: ./src
+        path: ./src-workload
         message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update workloadApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
 
     # Step 6: Push the changes to a new branch (generates branch automatically)
     - uses: git-push
       as: push-changes
       config:
-        path: ./src
+        path: ./src-workload
         generateTargetBranch: true
 
     # Step 7: Create Pull Request
