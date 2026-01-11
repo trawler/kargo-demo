@@ -17,4 +17,4 @@ controlApps:
 # Workload cluster apps for prod environment
 workloadApps:
   cert-manager:
-    appRevision: cert-manager-1.17.1
+    appRevision: 
