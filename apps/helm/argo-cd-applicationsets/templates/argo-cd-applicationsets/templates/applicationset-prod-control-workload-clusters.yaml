@@ -1,0 +1,76 @@
+---
+# Source: argo-cd-applicationsets/templates/applicationset-prod-control-workload-clusters.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: prod-control-workload-clusters
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/instance: argocd-cd
+spec:
+  generators:
+    - matrix:
+        generators:
+        - list:
+            elements:
+              - cluster: prod-workload
+                server: https://prod-workload:6443
+                environment: prod
+                clusterType: workload
+                nodesCidr: 172.20.0.0/16
+                apiserver: https://172.20.0.16:6443
+                apiserverIp: 172.20.0.16
+        - list:
+            elements:
+              - appName: cert-manager
+                appRevision: cert-manager-1.17.1
+  goTemplate: true
+  goTemplateOptions:
+  - missingkey=error
+  template:
+    metadata:
+      name: '{{.appName}}-{{.cluster}}'
+      annotations:
+        kargo.akuity.io/authorized-stage: msvc-system:{{.environment}}
+    spec:
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      project: 'msvc-system'
+      source:
+        path: apps/{{.appName}}
+        repoURL: https://github.com/trawler/kargo-demo.git
+        targetRevision: '{{.appRevision}}'
+        helm:
+          parameters:
+            - name: argoApp.name
+              value: '{{.appName}}-{{.cluster}}'
+            - name: argoApp.project
+              value: 'msvc-system'
+            - name: argoApp.cluster
+              value: '{{.cluster}}'
+            - name: argoApp.server
+              value: '{{.server}}'
+            - name: argoApp.path
+              value: '{{.appName}}'
+            - name: argoApp.revision
+              value: '{{.appRevision}}'
+            - name: argoApp.namespace
+              value: 'argocd'
+            - name: argoApp.environment
+              value: '{{.environment}}'
+            - name: argoApp.nodes.cidr
+              value: '{{.nodesCidr}}'
+            - name: argoApp.clusterType
+              value: '{{.clusterType}}'
+            - name: argoApp.apiserver.cidr
+              value: '{{.apiserverIp}}'
+            - name: argoApp.apiserver.server
+              value: '{{.apiserver}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Replace=true
