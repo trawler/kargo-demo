@@ -1,0 +1,85 @@
+---
+# Source: argo-cd-applicationsets/templates/applicationset-prod-control-control.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: prod-control-control-clusters
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/instance: argocd-cd
+spec:
+  generators:
+    - list:
+        elements:
+          - appName: argo-cd-applicationsets
+            appRevision: main
+          - appName: cert-manager
+            appRevision: 77e90a9df2d4a6ed6fea74c00e40dbc68983369d
+          - appName: kargo
+            appRevision: main
+  goTemplate: true
+  goTemplateOptions:
+  - missingkey=error
+  template:
+    metadata:
+      name: '{{.appName}}-prod-control'
+      annotations:
+        kargo.akuity.io/authorized-stage: msvc-system:prod
+    spec:
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      project: 'msvc-system'
+      source:
+        path: apps/{{.appName}}
+        repoURL: https://github.com/trawler/kargo-demo.git
+        targetRevision: '{{.appRevision}}'
+        helm:
+          parameters:
+            - name: argoApp.name
+              value: '{{.appName}}-prod-control'
+            - name: argoApp.project
+              value: 'msvc-system'
+            - name: argoApp.cluster
+              value: 'prod-control'
+            - name: argoApp.server
+              value: 'https://kubernetes.default.svc'
+            - name: argoApp.path
+              value: '{{.appName}}'
+            - name: argoApp.revision
+              value: '{{.appRevision}}'
+            - name: argoApp.namespace
+              value: 'argocd'
+            - name: argoApp.environment
+              value: 'prod'
+            - name: argoApp.nodes.cidr
+              value: '172.20.0.0/16'
+            - name: argoApp.clusterType
+              value: 'control'
+            - name: argoApp.apiserver.cidr
+              value: '172.20.0.15'
+            - name: argoApp.apiserver.server
+              value: 'https://172.20.0.15:6443'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Replace=true
+      ignoreDifferences:
+        - group: kargo.akuity.io
+          kind: Warehouse
+          jsonPointers:
+            - /status
+            - /metadata/managedFields
+        - group: kargo.akuity.io
+          kind: Stage
+          jsonPointers:
+            - /status
+            - /metadata/managedFields
+        - group: kargo.akuity.io
+          kind: Freight
+          jsonPointers:
+            - /status
+            - /metadata/managedFields
