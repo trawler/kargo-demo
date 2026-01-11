@@ -1,9 +1,10 @@
-{{ if eq .Values.global.argoApp.environment "prod" }}
+---
+# Source: argo-cd-applicationsets/templates/applicationset-prod-control-control.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: prod-control-control-clusters
-  namespace: {{ .Release.Namespace }}
+  namespace: argocd
   labels:
     app.kubernetes.io/part-of: argocd
     app.kubernetes.io/instance: argocd-cd
@@ -11,16 +12,18 @@ spec:
   generators:
     - list:
         elements:
-{{- range $appName, $appConfig := .Values.controlApps }}
-          - appName: {{ $appName }}
-            appRevision: {{ $appConfig.appRevision }}
-{{- end }}
+          - appName: argo-cd-applicationsets
+            appRevision: main
+          - appName: cert-manager
+            appRevision: 
+          - appName: kargo
+            appRevision: main
   goTemplate: true
   goTemplateOptions:
   - missingkey=error
   template:
     metadata:
-      name: '{{ "{{" }}.appName{{ "}}" }}-prod-control'
+      name: '{{.appName}}-prod-control'
       annotations:
         kargo.akuity.io/authorized-stage: msvc-system:prod
     spec:
@@ -29,13 +32,13 @@ spec:
         namespace: argocd
       project: 'msvc-system'
       source:
-        path: apps/{{ "{{" }}.appName{{ "}}" }}
+        path: apps/{{.appName}}
         repoURL: https://github.com/trawler/kargo-demo.git
-        targetRevision: '{{ "{{" }}.appRevision{{ "}}" }}'
+        targetRevision: '{{.appRevision}}'
         helm:
           parameters:
             - name: argoApp.name
-              value: '{{ "{{" }}.appName{{ "}}" }}-prod-control'
+              value: '{{.appName}}-prod-control'
             - name: argoApp.project
               value: 'msvc-system'
             - name: argoApp.cluster
@@ -43,9 +46,9 @@ spec:
             - name: argoApp.server
               value: 'https://kubernetes.default.svc'
             - name: argoApp.path
-              value: '{{ "{{" }}.appName{{ "}}" }}'
+              value: '{{.appName}}'
             - name: argoApp.revision
-              value: '{{ "{{" }}.appRevision{{ "}}" }}'
+              value: '{{.appRevision}}'
             - name: argoApp.namespace
               value: 'argocd'
             - name: argoApp.environment
@@ -80,4 +83,3 @@ spec:
           jsonPointers:
             - /status
             - /metadata/managedFields
-{{ end }}
