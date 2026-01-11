@@ -114,7 +114,7 @@ spec:
       as: create-pr
       config:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
-        sourceBranch: ${{ "{{" }} outputs.push-changes.branch {{ "}}" }}
+        sourceBranch: ${{ "{{" }} task.outputs['push-changes'].branch {{ "}}" }}
         targetBranch: main
         title: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update controlApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
         description: "Automated PR to update controlApps ApplicationSet for ${{ "{{" }} vars.appName {{ "}}" }} to tag ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
@@ -181,7 +181,7 @@ spec:
       as: create-pr
       config:
         repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
-        sourceBranch: ${{ "{{" }} outputs.push-changes.branch {{ "}}" }}
+        sourceBranch: ${{ "{{" }} task.outputs['push-changes'].branch {{ "}}" }}
         targetBranch: main
         title: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update workloadApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
         description: "Automated PR to update workloadApps ApplicationSet for ${{ "{{" }} vars.appName {{ "}}" }} to tag ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
