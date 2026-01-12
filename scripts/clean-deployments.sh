@@ -1,7 +1,14 @@
 #!/bin/bash
 set -e
 
-echo "Cleaning deployments from kind clusters..."
+# Configuration: Set CLUSTER_SET to "kind" or "poc" (default: kind)
+CLUSTER_SET="${CLUSTER_SET:-kind}"
+
+if [ "$CLUSTER_SET" = "poc" ]; then
+    echo "Cleaning deployments from POC clusters..."
+else
+    echo "Cleaning deployments from kind clusters..."
+fi
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -16,11 +23,22 @@ echo_warn() {
     echo -e "${YELLOW}⚠${NC} $1"
 }
 
+# Get kubectl context name for a cluster
+get_context() {
+    local cluster=$1
+    if [ "$CLUSTER_SET" = "poc" ]; then
+        echo "poc-$cluster"
+    else
+        echo "kind-$cluster"
+    fi
+}
+
 # Clean ArgoCD deployments from a cluster
 clean_cluster() {
     local cluster=$1
+    local context=$(get_context "$cluster")
     
-    if ! kubectl --context kind-"$cluster" cluster-info &>/dev/null; then
+    if ! kubectl --context "$context" cluster-info &>/dev/null; then
         echo_warn "Cluster $cluster does not exist, skipping..."
         return
     fi
@@ -29,19 +47,19 @@ clean_cluster() {
     
     # Delete all ApplicationSets first (they create Applications)
     echo_info "  Deleting ApplicationSets..."
-    kubectl --context kind-"$cluster" delete applicationsets --all -n argocd --ignore-not-found=true --timeout=30s 2>/dev/null || true
+    kubectl --context "$context" delete applicationsets --all -n argocd --ignore-not-found=true --timeout=30s 2>/dev/null || true
     
     # Delete all Applications
     echo_info "  Deleting Applications..."
-    kubectl --context kind-"$cluster" delete applications --all -n argocd --ignore-not-found=true --timeout=30s 2>/dev/null || true
+    kubectl --context "$context" delete applications --all -n argocd --ignore-not-found=true --timeout=30s 2>/dev/null || true
     
     # Remove finalizers from Applications (ArgoCD controller may be gone, causing deadlock)
     echo_info "  Removing finalizers from Applications..."
     local apps
-    apps=$(kubectl --context kind-"$cluster" get applications -n argocd -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
+    apps=$(kubectl --context "$context" get applications -n argocd -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo "")
     if [ -n "$apps" ]; then
         for app in $apps; do
-            kubectl --context kind-"$cluster" patch application "$app" -n argocd \
+            kubectl --context "$context" patch application "$app" -n argocd \
                 --type json \
                 -p='[{"op": "remove", "path": "/metadata/finalizers"}]' \
                 2>/dev/null || true
@@ -53,23 +71,23 @@ clean_cluster() {
     
     # Delete AppProjects (except default)
     echo_info "  Deleting AppProjects..."
-    kubectl --context kind-"$cluster" delete appproject msvc-system -n argocd --ignore-not-found=true --timeout=30s 2>/dev/null || true
+    kubectl --context "$context" delete appproject msvc-system -n argocd --ignore-not-found=true --timeout=30s 2>/dev/null || true
     
     # Unregister workload clusters (delete cluster secrets)
     if [ "$cluster" = "stage-control" ]; then
         echo_info "  Unregistering workload clusters..."
-        kubectl --context kind-"$cluster" delete secret stage-workload -n argocd --ignore-not-found=true 2>/dev/null || true
+        kubectl --context "$context" delete secret stage-workload -n argocd --ignore-not-found=true 2>/dev/null || true
     elif [ "$cluster" = "prod-control" ]; then
         echo_info "  Unregistering workload clusters..."
-        kubectl --context kind-"$cluster" delete secret prod-workload -n argocd --ignore-not-found=true 2>/dev/null || true
+        kubectl --context "$context" delete secret prod-workload -n argocd --ignore-not-found=true 2>/dev/null || true
     fi
     
     # Delete ArgoCD namespace (this removes all ArgoCD components)
     # Use --force --grace-period=0 to bypass finalizers if needed
     echo_info "  Deleting ArgoCD namespace..."
-    kubectl --context kind-"$cluster" delete namespace argocd --ignore-not-found=true --timeout=60s 2>/dev/null || {
+    kubectl --context "$context" delete namespace argocd --ignore-not-found=true --timeout=60s 2>/dev/null || {
         echo_warn "  Namespace deletion timed out, forcing deletion..."
-        kubectl --context kind-"$cluster" delete namespace argocd --force --grace-period=0 --ignore-not-found=true 2>/dev/null || true
+        kubectl --context "$context" delete namespace argocd --force --grace-period=0 --ignore-not-found=true 2>/dev/null || true
     }
     
     echo_info "  ✓ $cluster cleaned"

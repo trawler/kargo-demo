@@ -1,6 +1,10 @@
 postgresqlClusters:
   enabled: false
 
+# Workload cluster configuration (defaults - overridden by environment-specific values files)
+# For kind clusters, use static IPs. For POC/metakube, override with actual cluster info.
+workloadClusters: []
+
 # Control cluster apps (defaults - overridden by environment-specific values files)
 controlApps:
   cert-manager:

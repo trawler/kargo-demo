@@ -13,13 +13,15 @@ spec:
         generators:
         - list:
             elements:
-              - cluster: stage-workload
-                server: https://stage-workload:6443
+{{- range .Values.workloadClusters }}
+              - cluster: {{ .cluster }}
+                server: {{ .server }}
                 environment: stage
                 clusterType: workload
-                nodesCidr: 172.20.0.0/16
-                apiserver: https://172.20.0.6:6443
-                apiserverIp: 172.20.0.6
+                nodesCidr: {{ .nodesCidr }}
+                apiserver: {{ .apiserver }}
+                apiserverIp: {{ .apiserverIp }}
+{{- end }}
         - list:
             elements:
 {{- range $appName, $appConfig := .Values.workloadApps }}

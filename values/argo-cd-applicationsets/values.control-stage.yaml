@@ -5,6 +5,14 @@ global:
 postgresqlClusters:
   enabled: true
 
+# Workload cluster configuration for stage environment
+workloadClusters:
+  - cluster: stage-workload
+    server: https://stage-workload:6443
+    apiserver: https://172.20.0.6:6443
+    apiserverIp: 172.20.0.6
+    nodesCidr: 172.20.0.0/16
+
 # Control cluster apps for stage environment
 controlApps:
   cert-manager:

@@ -13,13 +13,15 @@ spec:
         generators:
         - list:
             elements:
-              - cluster: prod-workload
-                server: https://prod-workload:6443
+{{- range .Values.workloadClusters }}
+              - cluster: {{ .cluster }}
+                server: {{ .server }}
                 environment: prod
                 clusterType: workload
-                nodesCidr: 172.20.0.0/16
-                apiserver: https://172.20.0.16:6443
-                apiserverIp: 172.20.0.16
+                nodesCidr: {{ .nodesCidr }}
+                apiserver: {{ .apiserver }}
+                apiserverIp: {{ .apiserverIp }}
+{{- end }}
         - list:
             elements:
 {{- range $appName, $appConfig := .Values.workloadApps }}

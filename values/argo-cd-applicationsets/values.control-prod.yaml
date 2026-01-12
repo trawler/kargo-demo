@@ -5,6 +5,14 @@ global:
 postgresqlClusters:
   enabled: true
 
+# Workload cluster configuration for prod environment
+workloadClusters:
+  - cluster: prod-workload
+    server: https://prod-workload:6443
+    apiserver: https://172.20.0.16:6443
+    apiserverIp: 172.20.0.16
+    nodesCidr: 172.20.0.0/16
+
 # Control cluster apps for prod environment
 controlApps:
   cert-manager:

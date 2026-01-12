@@ -1,0 +1,35 @@
+global:
+  argoApp:
+    environment: stage
+
+postgresqlClusters:
+  enabled: true
+
+# Workload cluster configuration for stage environment (POC/Metakube)
+# Note: server/apiserver URLs should match the actual Metakube cluster API server URLs
+# Update these values based on your POC cluster configuration
+workloadClusters:
+  - cluster: stage-workload
+    # Server URL - ArgoCD will use the cluster secret's server URL, but this is used as a parameter
+    # For POC, this can be a placeholder since ArgoCD uses the cluster secret
+    server: https://stage-workload:6443
+    # Actual API server URL from Metakube (extracted from kubectl config)
+    apiserver: https://l4tt8cr288.dus2-1.stage.metakube.de:31518
+    # API server IP (optional, may not be needed for POC)
+    apiserverIp: ""
+    # Nodes CIDR (update if different from default)
+    nodesCidr: 10.0.0.0/16
+
+# Control cluster apps for stage environment
+controlApps:
+  cert-manager:
+    appRevision: main
+  argo-cd-applicationsets:
+    appRevision: main
+  kargo:
+    appRevision: main
+
+# Workload cluster apps for stage environment
+workloadApps:
+  cert-manager:
+    appRevision: main

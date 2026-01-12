@@ -16,7 +16,7 @@ spec:
         includePaths:
           - helm/{{ .name }}  # Only watch this app's path
         {{- else if eq $.Values.global.argoApp.environment "prod" }}
-        allowTags: ^{{ .name }}-v[0-9]+\.[0-9]+\.[0-9]+$  # Only watch this app's tags
+        allowTags: ^{{ .name }}-v?[0-9]+\.[0-9]+\.[0-9]+$  # Match tags with optional 'v' prefix: cert-manager-v1.17.1 or cert-manager-1.17.1
         {{- end }}
         commitSelectionStrategy: NewestFromBranch
         discoveryLimit: 20
