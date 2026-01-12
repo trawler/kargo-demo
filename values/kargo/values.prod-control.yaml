@@ -1,4 +1,8 @@
 # Prod-control cluster overrides (combines prod environment + control cluster)
+global:
+  argoApp:
+    environment: prod
+
 kargo:
   api:
     host: "kargo-prod.localhost"

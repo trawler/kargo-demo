@@ -1,4 +1,8 @@
 # Stage-control cluster overrides (combines stage environment + control cluster)
+global:
+  argoApp:
+    environment: stage
+
 kargo:
   api:
     host: "kargo-stage.localhost"
