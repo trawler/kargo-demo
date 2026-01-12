@@ -13,6 +13,7 @@ spec:
         generators:
         - list:
             elements:
+{{- if and .Values.workloadClusters (gt (len .Values.workloadClusters) 0) }}
 {{- range .Values.workloadClusters }}
               - cluster: {{ .cluster }}
                 server: {{ .server }}
@@ -22,11 +23,18 @@ spec:
                 apiserver: {{ .apiserver }}
                 apiserverIp: {{ .apiserverIp }}
 {{- end }}
+{{- else }}
+              []
+{{- end }}
         - list:
             elements:
+{{- if and .Values.workloadApps (gt (len .Values.workloadApps) 0) }}
 {{- range $appName, $appConfig := .Values.workloadApps }}
               - appName: {{ $appName }}
                 appRevision: {{ $appConfig.appRevision }}
+{{- end }}
+{{- else }}
+              []
 {{- end }}
   goTemplate: true
   goTemplateOptions:

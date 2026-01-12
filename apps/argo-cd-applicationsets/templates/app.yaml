@@ -27,6 +27,8 @@ spec:
           - /values/{{ .Values.argoApp.path }}/values.yaml
           - /values/{{ .Values.argoApp.path }}/values.{{ .Values.argoApp.environment }}.yaml
           - /values/{{ .Values.argoApp.path }}/values.{{ .Values.argoApp.clusterType }}.yaml
+          - /values/{{ .Values.argoApp.path }}/values.{{ .Values.argoApp.clusterType }}-{{ .Values.argoApp.environment }}.yaml
+          - /values/{{ .Values.argoApp.path }}/values.{{ .Values.argoApp.environment }}-{{ .Values.argoApp.clusterType }}.yaml
           - /values/{{ .Values.argoApp.path }}/values.{{ .Values.argoApp.environment }}.{{ .Values.argoApp.clusterType }}.yaml
           - /values/{{ .Values.argoApp.path }}/values.{{ .Values.argoApp.cluster }}.yaml
         values: |
