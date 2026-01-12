@@ -16,7 +16,7 @@ workloadClusters:
 # Control cluster apps for prod environment
 controlApps:
   cert-manager:
-    appRevision: cert-manager-1.17.1
+    appRevision: cert-manager-v1.17.3
   argo-cd-applicationsets:
     appRevision: main
   kargo:
