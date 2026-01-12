@@ -69,7 +69,7 @@ spec:
           - branch: main
             path: ./src-control
 
-    # Step 2: Get the tag name from freight (the git tag created by warehouse)
+    # Step 2: Get the tag name from freight (for prod, freight comes from warehouse watching tags)
     - uses: compose-output
       as: tag-info
       config:
@@ -84,38 +84,27 @@ spec:
           - key: controlApps.${{ "{{" }} vars.appName {{ "}}" }}.appRevision
             value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
 
-    # Step 4: Generate ApplicationSet files using helm-template
-    - uses: helm-template
-      as: generate-appsets
-      config:
-        path: ./src-control/helm/argo-cd-applicationsets
-        releaseName: argo-cd-applicationsets
-        namespace: argocd
-        valuesFiles:
-          - ./src-control/values/argo-cd-applicationsets/values.control-prod.yaml
-        outPath: ./src-control/helm
-
-    # Step 5: Commit the changes
+    # Step 4: Commit the changes (only values files, ArgoCD will regenerate ApplicationSets)
     - uses: git-commit
       as: commit-changes
       config:
         path: ./src-control
         message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update controlApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
 
-    # Step 6: Generate unique branch name for control
+    # Step 5: Generate unique branch name for control
     - uses: compose-output
       as: branch-name
       config:
         branchName: ${{ "{{" }} "kargo/promotion/" + vars.appName + "-prod-control-" + commitFrom(vars.repoURL).ID {{ "}}" }}
 
-    # Step 7: Push the changes to a new branch
+    # Step 6: Push the changes to a new branch
     - uses: git-push
       as: push-changes
       config:
         path: ./src-control
         targetBranch: ${{ "{{" }} task.outputs['branch-name'].branchName {{ "}}" }}
 
-    # Step 8: Create Pull Request
+    # Step 7: Create Pull Request
     - uses: git-open-pr
       as: create-pr
       config:
@@ -142,16 +131,7 @@ spec:
           - branch: main
             path: ./src-workload
 
-    # Step 2: Clone repo to get tag name for the commit
-    - uses: git-clone
-      as: clone-for-tag
-      config:
-        repoURL: ${{ "{{" }} vars.repoURL {{ "}}" }}
-        checkout:
-          - commit: ${{ "{{" }} commitFrom(vars.repoURL).ID {{ "}}" }}
-            path: ./src-tag-lookup
-
-    # Step 3: Get the tag name using git describe
+    # Step 2: Get the tag name from freight (for prod, freight comes from warehouse watching tags)
     - uses: compose-output
       as: tag-info
       config:
@@ -166,38 +146,27 @@ spec:
           - key: workloadApps.${{ "{{" }} vars.appName {{ "}}" }}.appRevision
             value: ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}
 
-    # Step 4: Generate ApplicationSet files using helm-template
-    - uses: helm-template
-      as: generate-appsets
-      config:
-        path: ./src-workload/helm/argo-cd-applicationsets
-        releaseName: argo-cd-applicationsets
-        namespace: argocd
-        valuesFiles:
-          - ./src-workload/values/argo-cd-applicationsets/values.control-prod.yaml
-        outPath: ./src-workload/helm
-
-    # Step 5: Commit the changes
+    # Step 4: Commit the changes (only values files, ArgoCD will regenerate ApplicationSets)
     - uses: git-commit
       as: commit-changes
       config:
         path: ./src-workload
         message: "chore(${{ "{{" }} vars.appName {{ "}}" }}): update workloadApps appRevision to ${{ "{{" }} task.outputs['tag-info'].tagName {{ "}}" }}"
 
-    # Step 6: Generate unique branch name for workload
+    # Step 5: Generate unique branch name for workload
     - uses: compose-output
       as: branch-name
       config:
         branchName: ${{ "{{" }} "kargo/promotion/" + vars.appName + "-prod-workload-" + commitFrom(vars.repoURL).ID {{ "}}" }}
 
-    # Step 7: Push the changes to a new branch
+    # Step 6: Push the changes to a new branch
     - uses: git-push
       as: push-changes
       config:
         path: ./src-workload
         targetBranch: ${{ "{{" }} task.outputs['branch-name'].branchName {{ "}}" }}
 
-    # Step 8: Create Pull Request
+    # Step 7: Create Pull Request
     - uses: git-open-pr
       as: create-pr
       config:
