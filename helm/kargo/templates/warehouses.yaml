@@ -14,15 +14,15 @@ spec:
         {{- if eq $.Values.global.argoApp.environment "stage" }}
         branch: {{ $.Values.kargo.warehouse.branch | default "main" }}
         includePaths:
-          - helm/{{ .name }}  # Only watch this app's path
+          - helm/{{ .name }}
+        commitSelectionStrategy: NewestFromBranch # Use branch for stage
         {{- else if eq $.Values.global.argoApp.environment "prod" }}
         allowTags: ^{{ .name }}-v?[0-9]+\.[0-9]+\.[0-9]+$  # Match tags with optional 'v' prefix: cert-manager-v1.17.1 or cert-manager-1.17.1
+        commitSelectionStrategy: NewestTag # Use tags for prod
         {{- end }}
-        commitSelectionStrategy: NewestFromBranch
         discoveryLimit: 20
         strictSemvers: true
   interval: {{ $.Values.kargo.warehouse.interval }}
 {{- end }}
 {{- end }}
 {{- end }}
-
